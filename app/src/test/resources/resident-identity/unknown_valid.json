@@ -1,0 +1,21 @@
+{
+  "fixture_type": "synthetic_identity_consumer_scenario",
+  "received_at": "2026-07-27T12:00:01Z",
+  "messages": [
+    {
+      "schema_version": "1.0",
+      "event_id": "synthetic_identity_unknown_001",
+      "resident_id": null,
+      "display_name": "unknown",
+      "identity_status": "unknown",
+      "confidence": 0,
+      "source": "unknown",
+      "reason": "Synthetic uncertain observation.",
+      "timestamp": "2026-07-27T12:00:00Z"
+    }
+  ],
+  "expected": {
+    "state": "unknown",
+    "clear_resident_specific_ui": true
+  }
+}

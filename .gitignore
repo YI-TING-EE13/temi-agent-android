@@ -1,0 +1,67 @@
+# Android / Gradle generated files
+.gradle/
+**/.gradle/
+build/
+**/build/
+bin/
+gen/
+out/
+.externalNativeBuild/
+**/.externalNativeBuild/
+.cxx/
+**/.cxx/
+
+# Machine-local configuration and signing material
+local.properties
+*.local.properties
+signing.local.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+
+# Optional private deployment media
+app/src/main/res/raw/elderly_hand_exercise.mp4
+app/src/main/res/raw/elderly_leg_exercise.mp4
+
+# Android Studio
+.idea/
+**/.idea/
+*.iml
+
+# Packages, captures, reports and logs
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+captures/
+**/captures/
+logs/
+**/logs/
+*.log
+reports/
+**/reports/
+screenshots/
+recordings/
+debug_frames/
+tmp/
+**/tmp/
+
+# Python / reference-service caches
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+.pytest_cache/
+debug_frames/
+
+# OS-specific files
+.DS_Store
+Thumbs.db

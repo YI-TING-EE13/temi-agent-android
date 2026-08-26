@@ -1,0 +1,27 @@
+{
+  "fixture_type": "synthetic_invalid_report_scenario",
+  "report": {
+    "schema_version": "1.0",
+    "report_id": "synthetic_report_invalid_001",
+    "resident_id": "resident_father",
+    "display_name": "father",
+    "report_date": "2026-07-27",
+    "generated_at": "2026-07-27T20:00:00Z",
+    "status": "complete",
+    "discomfort_events": [],
+    "abnormal_events": [],
+    "reminder_status": [],
+    "important_changes": [],
+    "follow_up_notes": [],
+    "data_completeness": {
+      "status": "complete",
+      "missing_sections": []
+    },
+    "error_code": null,
+    "error_message": null
+  },
+  "expected": {
+    "disposition": "invalid",
+    "side_effect_applied": false
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "request_id": "synthetic_interaction_viewed_001",
+  "report_id": "synthetic_report_complete_001",
+  "resident_id": "resident_father",
+  "action": "viewed",
+  "status": "accepted",
+  "error_code": null,
+  "error_message": null,
+  "timestamp": "2026-07-27T20:05:00Z"
+}

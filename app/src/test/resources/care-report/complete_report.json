@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "report_id": "synthetic_report_complete_001",
+  "resident_id": "resident_father",
+  "display_name": "father",
+  "report_date": "2026-07-27",
+  "generated_at": "2026-07-27T20:00:00Z",
+  "status": "complete",
+  "summary": "Synthetic evidence counts: discomfort_events=1; abnormal_events=0; reminder_status=0; important_changes=0; follow_up_notes=0.",
+  "discomfort_events": [
+    {
+      "event_id": "synthetic_discomfort_001",
+      "timestamp": "2026-07-27T08:00:00Z",
+      "category": "synthetic_discomfort"
+    }
+  ],
+  "abnormal_events": [],
+  "reminder_status": [],
+  "important_changes": [],
+  "follow_up_notes": [],
+  "data_completeness": {
+    "status": "complete",
+    "missing_sections": []
+  },
+  "error_code": null,
+  "error_message": null
+}

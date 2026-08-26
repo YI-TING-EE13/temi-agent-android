@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "report_id": "synthetic_report_partial_001",
+  "resident_id": "resident_mother",
+  "display_name": "mother",
+  "report_date": "2026-07-27",
+  "generated_at": "2026-07-27T20:00:00Z",
+  "status": "partial",
+  "summary": "Available synthetic evidence counts: discomfort_events=0.",
+  "discomfort_events": [],
+  "abnormal_events": [],
+  "reminder_status": [],
+  "important_changes": [],
+  "follow_up_notes": [],
+  "data_completeness": {
+    "status": "partial",
+    "missing_sections": [
+      "abnormal_events",
+      "reminder_status",
+      "important_changes",
+      "follow_up_notes"
+    ]
+  },
+  "error_code": "report_partial_data",
+  "error_message": "Synthetic fixture has intentionally unavailable sections."
+}

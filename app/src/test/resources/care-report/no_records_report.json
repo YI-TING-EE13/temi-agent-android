@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "report_id": "synthetic_report_no_records_001",
+  "resident_id": "resident_father",
+  "display_name": "father",
+  "report_date": "2026-07-27",
+  "generated_at": "2026-07-27T20:00:00Z",
+  "status": "no_records",
+  "summary": "Synthetic evidence counts: discomfort_events=0; abnormal_events=0; reminder_status=0; important_changes=0; follow_up_notes=0.",
+  "discomfort_events": [],
+  "abnormal_events": [],
+  "reminder_status": [],
+  "important_changes": [],
+  "follow_up_notes": [],
+  "data_completeness": {
+    "status": "no_records",
+    "missing_sections": []
+  },
+  "error_code": "report_no_records",
+  "error_message": "No synthetic records exist for this fixture date."
+}

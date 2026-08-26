@@ -1,0 +1,22 @@
+{
+  "fixture_type": "synthetic_identity_consumer_scenario",
+  "received_at": "2026-07-27T12:00:01Z",
+  "messages": [
+    {
+      "schema_version": "1.0",
+      "event_id": "synthetic_identity_mother_001",
+      "resident_id": "resident_mother",
+      "display_name": "mother",
+      "identity_status": "mother",
+      "confidence": 0.91,
+      "source": "vision_gender_fallback",
+      "reason": "Synthetic single-person fallback observation.",
+      "timestamp": "2026-07-27T12:00:00Z"
+    }
+  ],
+  "expected": {
+    "state": "mother",
+    "accepted_messages": 1,
+    "ttl_seconds": 30
+  }
+}

@@ -1,0 +1,8 @@
+# Copy to signing.local.properties (ignored) and fill it using the approved
+# operator signing procedure. Do not commit the populated file.
+# The store file value must be an absolute external path; use forward slashes
+# or correctly escaped Windows syntax. Never place a real path or credentials here.
+demo.signing.store.file=<approved-keystore-path>
+demo.signing.store.password=<store-password>
+demo.signing.key.alias=<key-alias>
+demo.signing.key.password=<key-password>

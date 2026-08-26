@@ -1,0 +1,258 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+// ---------------------------------------------------------------------------
+// Load local.properties for user-specific configuration.
+// Copy 'local.properties.example' to 'local.properties' to get started.
+// ---------------------------------------------------------------------------
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localProps.load(new FileInputStream(localPropsFile))
+}
+def webSocketServerUrls = localProps.getProperty('ws.server.urls', '').trim()
+
+// Demo signing is intentionally explicit and fail-closed. The ignored
+// signing.local.properties file is the only source of its four private inputs.
+def demoSigningProperties = new Properties()
+def demoSigningPropertiesFile = rootProject.file('signing.local.properties')
+def demoSigningPropertiesStatus = 'missing'
+if (demoSigningPropertiesFile.isFile()) {
+    try {
+        demoSigningPropertiesFile.withInputStream { stream ->
+            demoSigningProperties.load(stream)
+        }
+        demoSigningPropertiesStatus = 'loaded'
+    } catch (Exception ignored) {
+        demoSigningPropertiesStatus = 'unreadable'
+    }
+}
+def demoSigningProperty = { String key ->
+    String value = demoSigningProperties.getProperty(key)
+    value == null ? null : value.trim()
+}
+def demoSigningStoreFilePath = demoSigningProperty('demo.signing.store.file')
+def demoSigningStorePassword = demoSigningProperty('demo.signing.store.password')
+def demoSigningKeyAlias = demoSigningProperty('demo.signing.key.alias')
+def demoSigningKeyPassword = demoSigningProperty('demo.signing.key.password')
+def demoSigningStoreFileIsAbsolute = demoSigningStoreFilePath != null &&
+        new File(demoSigningStoreFilePath).isAbsolute()
+def expectedDemoSignerSha256 =
+        '4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F'
+
+android {
+    compileSdk 34
+
+    signingConfigs {
+        demoSigning {
+            if (demoSigningStoreFilePath && demoSigningStoreFileIsAbsolute) {
+                storeFile file(demoSigningStoreFilePath)
+            }
+            if (demoSigningStorePassword) {
+                storePassword demoSigningStorePassword
+            }
+            if (demoSigningKeyAlias) {
+                keyAlias demoSigningKeyAlias
+            }
+            if (demoSigningKeyPassword) {
+                keyPassword demoSigningKeyPassword
+            }
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.robotemi.agent"
+        minSdkVersion 23
+        //noinspection ExpiredTargetSdkVersion,ExpiringTargetSdkVersion
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Endpoint and optional resident/care settings remain machine-local. Media v1.1
+        // is deliberately controlled only by the version-controlled build type below.
+        buildConfigField "String", "WS_SERVER_URLS",
+                "\"${webSocketServerUrls}\""
+        buildConfigField "boolean", "MEDIA_V11_ENABLED", "false"
+        buildConfigField "long", "MEDIA_V11_ATTACH_DEADLINE_MS", "0L"
+        buildConfigField "boolean", "RESIDENT_IDENTITY_ENABLED",
+                "${localProps.getProperty('resident.identity.enabled', 'false')}"
+        buildConfigField "boolean", "CARE_REPORT_ENABLED",
+                "${localProps.getProperty('care.report.enabled', 'false')}"
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField "boolean", "MEDIA_V11_ENABLED", "false"
+            buildConfigField "long", "MEDIA_V11_ATTACH_DEADLINE_MS", "0L"
+        }
+
+        demo {
+            initWith debug
+            // Dependency/resource fallback only; signing is always demoSigning.
+            matchingFallbacks = ['debug']
+            signingConfig signingConfigs.demoSigning
+            buildConfigField "boolean", "MEDIA_V11_ENABLED", "true"
+            buildConfigField "long", "MEDIA_V11_ATTACH_DEADLINE_MS", "10000L"
+        }
+
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "MEDIA_V11_ENABLED", "false"
+            buildConfigField "long", "MEDIA_V11_ATTACH_DEADLINE_MS", "0L"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
+
+    namespace 'com.robotemi.agent'
+
+    lint {
+        abortOnError false
+    }
+}
+
+def verifyDemoSigningConfig = tasks.register('verifyDemoSigningConfig') {
+    group = 'verification'
+    description = 'Validates the explicit Demo signing keystore and public certificate.'
+    doLast {
+        def emitFailure = { String code, String pathClass, String digest = 'none' ->
+            println "DEMO_SIGNING_VERIFY variant=demo result=FAIL code=${code} path_class=${pathClass} signer_sha256=${digest}"
+            throw new GradleException("DEMO_SIGNING_VERIFY_FAIL code=${code}")
+        }
+        def emitPass = { String pathClass, String digest ->
+            println "DEMO_SIGNING_VERIFY variant=demo result=PASS code=OK path_class=${pathClass} signer_sha256=${digest}"
+        }
+
+        if (demoSigningPropertiesStatus != 'loaded') {
+            emitFailure('CONFIG_MISSING', 'not_configured')
+        }
+
+        def requiredValues = [
+                demoSigningStoreFilePath,
+                demoSigningStorePassword,
+                demoSigningKeyAlias,
+                demoSigningKeyPassword
+        ]
+        if (requiredValues.any { !it }) {
+            emitFailure('PROPERTY_MISSING', 'config_loaded')
+        }
+
+        if (!demoSigningStoreFileIsAbsolute) {
+            emitFailure('KEYSTORE_PATH_NOT_ABSOLUTE', 'invalid_path')
+        }
+
+        File storeFile = project.file(demoSigningStoreFilePath)
+        String pathClass = storeFile.isFile() && storeFile.canRead() ? 'readable_file' :
+                (storeFile.exists() ? 'unreadable_file' : 'missing_file')
+        if (pathClass != 'readable_file') {
+            emitFailure('KEYSTORE_UNAVAILABLE', pathClass)
+        }
+
+        def keyStore
+        def keyStoreTypes = ['JKS', java.security.KeyStore.getDefaultType(), 'PKCS12'].unique()
+        for (String keyStoreType : keyStoreTypes) {
+            if (keyStore != null) {
+                break
+            }
+            try {
+                def candidate = java.security.KeyStore.getInstance(keyStoreType)
+                storeFile.withInputStream { stream ->
+                    candidate.load(stream, demoSigningStorePassword.toCharArray())
+                }
+                keyStore = candidate
+            } catch (Exception ignored) {
+                // Try the next supported keystore format without exposing details.
+            }
+        }
+        if (keyStore == null) {
+            emitFailure('KEYSTORE_LOAD_FAILED', pathClass)
+        }
+
+        if (!keyStore.containsAlias(demoSigningKeyAlias)) {
+            emitFailure('ALIAS_UNAVAILABLE', pathClass)
+        }
+
+        try {
+            if (keyStore.getKey(demoSigningKeyAlias, demoSigningKeyPassword.toCharArray()) == null) {
+                emitFailure('KEY_UNAVAILABLE', pathClass)
+            }
+        } catch (Exception ignored) {
+            emitFailure('KEY_UNAVAILABLE', pathClass)
+        }
+
+        java.security.cert.Certificate certificate
+        try {
+            certificate = keyStore.getCertificate(demoSigningKeyAlias)
+            if (certificate == null) {
+                emitFailure('CERTIFICATE_UNAVAILABLE', pathClass)
+            }
+        } catch (Exception ignored) {
+            emitFailure('CERTIFICATE_UNAVAILABLE', pathClass)
+        }
+
+        String signerSha256
+        try {
+            byte[] digest = java.security.MessageDigest.getInstance('SHA-256')
+                    .digest(certificate.encoded)
+            signerSha256 = digest.collect { byte value -> String.format('%02X', value & 0xFF) }.join()
+        } catch (Exception ignored) {
+            emitFailure('CERTIFICATE_UNAVAILABLE', pathClass)
+        }
+
+        if (signerSha256 != expectedDemoSignerSha256) {
+            emitFailure('SIGNER_MISMATCH', pathClass, signerSha256)
+        }
+        emitPass(pathClass, signerSha256)
+    }
+}
+
+tasks.matching { task ->
+    task.name == 'assembleDemo' || task.name == 'bundleDemo' || task.name.startsWith('packageDemo')
+}.configureEach {
+    dependsOn verifyDemoSigningConfig
+}
+
+dependencies {
+    // AndroidX
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+    implementation 'androidx.core:core-ktx:1.12.0'
+
+    // Temi SDK
+    implementation 'com.robotemi:sdk:1.134.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // CameraX
+    def camerax_version = "1.3.4"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-view:${camerax_version}"
+
+    // OkHttp for WebSocket
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+
+    // Eclipse Paho MQTT
+    implementation "org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5"
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

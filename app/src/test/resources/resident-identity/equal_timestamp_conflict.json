@@ -1,0 +1,33 @@
+{
+  "fixture_type": "synthetic_identity_consumer_scenario",
+  "received_at": "2026-07-27T12:00:01Z",
+  "messages": [
+    {
+      "schema_version": "1.0",
+      "event_id": "synthetic_identity_equal_father_001",
+      "resident_id": "resident_father",
+      "display_name": "father",
+      "identity_status": "father",
+      "confidence": 0.9,
+      "source": "vision_gender_fallback",
+      "reason": "Synthetic equal-time father observation.",
+      "timestamp": "2026-07-27T12:00:00Z"
+    },
+    {
+      "schema_version": "1.0",
+      "event_id": "synthetic_identity_equal_mother_001",
+      "resident_id": "resident_mother",
+      "display_name": "mother",
+      "identity_status": "mother",
+      "confidence": 0.9,
+      "source": "vision_gender_fallback",
+      "reason": "Synthetic equal-time mother observation.",
+      "timestamp": "2026-07-27T12:00:00Z"
+    }
+  ],
+  "expected": {
+    "state": "unknown",
+    "disposition": "conflict",
+    "clear_resident_specific_ui": true
+  }
+}

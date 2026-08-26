@@ -1,0 +1,17 @@
+# Copy this file to local.properties in the project root and edit the values.
+# This file is a template only; do not commit the populated local.properties.
+
+# Android SDK location for this machine. Use forward slashes on Windows.
+# sdk.dir=<ANDROID_SDK_PATH>
+
+# Optional WebSocket video endpoints. The app accepts a comma-separated list.
+# Replace the placeholder with an endpoint provided by your deployment.
+ws.server.urls=ws://<BACKEND_HOST>:8080
+
+# Keep these disabled unless the corresponding external service and contract
+# are available in the deployment environment.
+resident.identity.enabled=false
+care.report.enabled=false
+
+# MQTT host, port, robot ID, and broker credentials are configured privately
+# through the app settings/runtime environment; they are not stored here.

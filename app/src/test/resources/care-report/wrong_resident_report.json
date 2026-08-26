@@ -1,0 +1,34 @@
+{
+  "fixture_type": "synthetic_wrong_resident_scenario",
+  "authorized_resident_id": "resident_father",
+  "report": {
+    "schema_version": "1.0",
+    "report_id": "synthetic_report_wrong_resident_001",
+    "resident_id": "resident_mother",
+    "display_name": "mother",
+    "report_date": "2026-07-27",
+    "generated_at": "2026-07-27T20:00:00Z",
+    "status": "complete",
+    "summary": "Synthetic evidence counts: discomfort_events=0; abnormal_events=0; reminder_status=1; important_changes=0; follow_up_notes=0.",
+    "discomfort_events": [],
+    "abnormal_events": [],
+    "reminder_status": [
+      {
+        "reminder_id": "synthetic_reminder_001",
+        "status": "pending"
+      }
+    ],
+    "important_changes": [],
+    "follow_up_notes": [],
+    "data_completeness": {
+      "status": "complete",
+      "missing_sections": []
+    },
+    "error_code": null,
+    "error_message": null
+  },
+  "expected": {
+    "disposition": "reject",
+    "side_effect_applied": false
+  }
+}
