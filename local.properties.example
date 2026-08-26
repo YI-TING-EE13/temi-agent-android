@@ -13,5 +13,10 @@ ws.server.urls=ws://<BACKEND_HOST>:8080
 resident.identity.enabled=false
 care.report.enabled=false
 
+# Legacy global MQTT action topics are disabled by default.
+# Enable only for a controlled LAB deployment that still requires
+# temi/action/speak, temi/action/navigate, and temi/action/wakeup.
+legacy.mqtt.actions.enabled=false
+
 # MQTT host, port, robot ID, and broker credentials are configured privately
 # through the app settings/runtime environment; they are not stored here.

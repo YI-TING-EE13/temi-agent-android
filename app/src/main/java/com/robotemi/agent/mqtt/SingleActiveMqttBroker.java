@@ -38,6 +38,7 @@ public final class SingleActiveMqttBroker {
     private final Listener listener;
     private final boolean residentIdentityEnabled;
     private final boolean careReportEnabled;
+    private final boolean legacyActionsEnabled;
 
     @Nullable private MqttConnection activeConnection;
     @Nullable private MqttEndpoint activeEndpoint;
@@ -47,14 +48,14 @@ public final class SingleActiveMqttBroker {
     private boolean shutdown;
 
     public SingleActiveMqttBroker(Factory factory, String clientId, Listener listener) {
-        this(factory, endpoint -> clientId, listener, false, false);
+        this(factory, endpoint -> clientId, listener, false, false, false);
     }
 
     public SingleActiveMqttBroker(
             Factory factory,
             ClientIdProvider clientIdProvider,
             Listener listener) {
-        this(factory, clientIdProvider, listener, false, false);
+        this(factory, clientIdProvider, listener, false, false, false);
     }
 
     public SingleActiveMqttBroker(
@@ -62,7 +63,8 @@ public final class SingleActiveMqttBroker {
             String clientId,
             Listener listener,
             boolean residentIdentityEnabled) {
-        this(factory, endpoint -> clientId, listener, residentIdentityEnabled, false);
+        this(factory, endpoint -> clientId, listener,
+                residentIdentityEnabled, false, false);
     }
 
     public SingleActiveMqttBroker(
@@ -70,7 +72,8 @@ public final class SingleActiveMqttBroker {
             ClientIdProvider clientIdProvider,
             Listener listener,
             boolean residentIdentityEnabled) {
-        this(factory, clientIdProvider, listener, residentIdentityEnabled, false);
+        this(factory, clientIdProvider, listener,
+                residentIdentityEnabled, false, false);
     }
 
     public SingleActiveMqttBroker(
@@ -80,7 +83,18 @@ public final class SingleActiveMqttBroker {
             boolean residentIdentityEnabled,
             boolean careReportEnabled) {
         this(factory, endpoint -> clientId, listener,
-                residentIdentityEnabled, careReportEnabled);
+                residentIdentityEnabled, careReportEnabled, false);
+    }
+
+    public SingleActiveMqttBroker(
+            Factory factory,
+            String clientId,
+            Listener listener,
+            boolean residentIdentityEnabled,
+            boolean careReportEnabled,
+            boolean legacyActionsEnabled) {
+        this(factory, endpoint -> clientId, listener,
+                residentIdentityEnabled, careReportEnabled, legacyActionsEnabled);
     }
 
     public SingleActiveMqttBroker(
@@ -89,11 +103,23 @@ public final class SingleActiveMqttBroker {
             Listener listener,
             boolean residentIdentityEnabled,
             boolean careReportEnabled) {
+        this(factory, clientIdProvider, listener,
+                residentIdentityEnabled, careReportEnabled, false);
+    }
+
+    public SingleActiveMqttBroker(
+            Factory factory,
+            ClientIdProvider clientIdProvider,
+            Listener listener,
+            boolean residentIdentityEnabled,
+            boolean careReportEnabled,
+            boolean legacyActionsEnabled) {
         this.factory = factory;
         this.clientIdProvider = clientIdProvider;
         this.listener = listener;
         this.residentIdentityEnabled = residentIdentityEnabled;
         this.careReportEnabled = careReportEnabled;
+        this.legacyActionsEnabled = legacyActionsEnabled;
     }
 
     public synchronized ApplyResult apply(
@@ -215,7 +241,8 @@ public final class SingleActiveMqttBroker {
         activeEndpoint = endpoint;
         activeTopics = endpoint == null ? null
                 : new MqttTopicSet(
-                        endpoint.robotId(), residentIdentityEnabled, careReportEnabled);
+                        endpoint.robotId(), residentIdentityEnabled, careReportEnabled,
+                        legacyActionsEnabled);
         if (endpoint == null) {
             return;
         }

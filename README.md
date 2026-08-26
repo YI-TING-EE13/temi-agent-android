@@ -58,7 +58,10 @@ Run commands from this directory, the Android project root.
    separated by commas.
 4. Leave resident.identity.enabled and care.report.enabled disabled unless the
    corresponding external contracts are available.
-5. Configure the MQTT host, port, robot ID, and any private broker values
+5. Leave legacy.mqtt.actions.enabled=false unless a controlled LAB deployment
+   explicitly requires the three global legacy action topics. Missing or
+   unrecognized values remain disabled.
+6. Configure the MQTT host, port, robot ID, and any private broker values
    through the app's runtime settings. Do not put them in tracked files.
 
 local.properties is ignored and machine-local. It must not be committed or
