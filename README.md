@@ -67,6 +67,13 @@ Run commands from this directory, the Android project root.
 local.properties is ignored and machine-local. It must not be committed or
 copied into a public repository.
 
+## Local Data and Backup
+
+MQTT endpoint settings and durable command/care delivery state are device-local.
+Android cloud backup/restore and device-to-device transfer are intentionally
+disabled and excluded. Operators must configure a new robot/device explicitly.
+This policy does not claim that local data is encrypted at rest.
+
 ### Signing
 
 Normal debug builds use the standard Android debug signing configuration. The
