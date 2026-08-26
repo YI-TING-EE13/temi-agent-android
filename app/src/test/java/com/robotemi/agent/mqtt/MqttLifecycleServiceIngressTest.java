@@ -37,6 +37,106 @@ public class MqttLifecycleServiceIngressTest {
     private static final String ROBOT_ID = "temi-01";
 
     @Test
+    public void retainedCanonicalSpeakIsRejectedBeforeServiceIngress() {
+        Harness harness = new Harness();
+
+        harness.emitTopic(
+                "temi/temi-01/cmd/request",
+                speakPayload("event-retained-canonical", "cmd-retained-canonical",
+                        "action-retained-canonical", "must not speak"),
+                true);
+
+        assertEquals(0, harness.speech.requests.size());
+        assertNull(harness.persistence.record("cmd-retained-canonical"));
+        assertEquals(0, harness.connection.publishAttempts);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertRetainedRejected(harness, MqttIngressPolicy.RETAINED_COMMAND_REQUEST);
+    }
+
+    @Test
+    public void retainedMediaPlayIsRejectedBeforeServiceIngress() {
+        Harness harness = new Harness(true);
+        RecordingMediaBinding binding = new RecordingMediaBinding();
+        MqttLifecycleService.LocalBinder binder = harness.service.new LocalBinder();
+        binder.attachMediaV11PlaybackBinding(binding);
+
+        harness.emitTopic(
+                "temi/temi-01/cmd/request",
+                mediaPlayPayload("event-retained-media", "cmd-retained-media",
+                        "elderly_hand_exercise"),
+                true);
+
+        assertNull(harness.persistence.record("cmd-retained-media"));
+        assertEquals(0, binding.startCount);
+        assertEquals(0, harness.connection.publishAttempts);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertRetainedRejected(harness, MqttIngressPolicy.RETAINED_COMMAND_REQUEST);
+    }
+
+    @Test
+    public void retainedLegacySpeakIsRejectedBeforeActivityForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_SPEAK, "{\"text\":\"retained\"}", true);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertRetainedRejected(harness, MqttIngressPolicy.RETAINED_LEGACY_SPEAK);
+    }
+
+    @Test
+    public void retainedLegacyNavigateIsRejectedBeforeActivityForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_NAVIGATE, "{\"target\":\"kitchen\"}", true);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertRetainedRejected(harness, MqttIngressPolicy.RETAINED_LEGACY_NAVIGATE);
+    }
+
+    @Test
+    public void retainedLegacyWakeupIsRejectedBeforeActivityForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_WAKEUP, "{\"word\":\"retained\"}", true);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertRetainedRejected(harness, MqttIngressPolicy.RETAINED_LEGACY_WAKEUP);
+    }
+
+    @Test
+    public void retainedObserverMessageStillReachesActivityWithRetainedFlag() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic("temi/temi-01/status", "observer", true);
+
+        assertEquals(1, listener.messageCount);
+        assertTrue(listener.lastRetained);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+    }
+
+    @Test
+    public void retainedIdentityAndCareMessagesAreNotGloballyRejected() {
+        Harness harness = new Harness(false, true, true);
+        RecordingUiListener listener = attachListener(harness);
+        MqttTopicSet topics = harness.broker.topics();
+
+        harness.emitTopic(topics.residentIdentityResult(), "identity", true);
+        harness.emitTopic(topics.careReport(), "care", true);
+
+        assertEquals(2, listener.messageCount);
+        assertTrue(listener.lastRetained);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.diagnostics.count("ingress", "retained_rejected"));
+    }
+
+    @Test
     public void detachedMediaPlayIsConsumedByServiceInsteadOfUiBuffer() {
         Harness harness = new Harness(true);
 
@@ -421,6 +521,18 @@ public class MqttLifecycleServiceIngressTest {
         binder.detachListener(second);
     }
 
+    private static RecordingUiListener attachListener(Harness harness) {
+        RecordingUiListener listener = new RecordingUiListener();
+        MqttLifecycleService.LocalBinder binder = harness.service.new LocalBinder();
+        binder.attachListener(listener);
+        return listener;
+    }
+
+    private static void assertRetainedRejected(Harness harness, String topicClass) {
+        assertEquals(1, harness.diagnostics.count(
+                "ingress", topicClass, "retained_rejected"));
+    }
+
     private static String speakPayload(
             String eventId, String commandId, String actionId, String text) {
         return "{\"schema_version\":\"1.0\","
@@ -475,6 +587,10 @@ public class MqttLifecycleServiceIngressTest {
         }
 
         Harness(boolean mediaEnabled) {
+            this(mediaEnabled, false, false);
+        }
+
+        Harness(boolean mediaEnabled, boolean residentIdentityEnabled, boolean careReportEnabled) {
             persistence = new MemoryPersistence();
             diagnostics = new RecordingDiagnostics();
             speech = new RecordingSpeechPort(persistence);
@@ -493,7 +609,8 @@ public class MqttLifecycleServiceIngressTest {
                     mediaEnabled);
             connection.connected = true;
             broker = new SingleActiveMqttBroker(
-                    factory, "client", service.brokerListenerForTest());
+                    factory, "client", service.brokerListenerForTest(),
+                    residentIdentityEnabled, careReportEnabled);
             service.bindBrokerForTest(broker);
             broker.apply(
                     MqttEndpointSelection.valid(
@@ -536,7 +653,11 @@ public class MqttLifecycleServiceIngressTest {
         }
 
         void emitTopic(String topic, String payload) {
-            connection.emitMessage(topic, payload);
+            emitTopic(topic, payload, false);
+        }
+
+        void emitTopic(String topic, String payload, boolean retained) {
+            connection.emitMessage(topic, payload, retained);
         }
 
         void complete(TtsRequest request, TtsRequest.Status status) {
@@ -717,19 +838,30 @@ public class MqttLifecycleServiceIngressTest {
             return connected;
         }
 
-        void emitMessage(String topic, String payload) {
+        void emitMessage(String topic, String payload, boolean retained) {
             assertNotNull(inboundMessageListener);
-            inboundMessageListener.onMessage(topic, payload, false);
+            inboundMessageListener.onMessage(topic, payload, retained);
         }
     }
 
     private static final class RecordingUiListener implements SingleActiveMqttBroker.Listener {
         int messageCount;
+        boolean lastRetained;
         final List<String> commandIds = new ArrayList<>();
 
         @Override
         public void onMessage(String topic, String payload) {
+            recordMessage(topic, payload, false);
+        }
+
+        @Override
+        public void onMessage(String topic, String payload, boolean retained) {
+            recordMessage(topic, payload, retained);
+        }
+
+        private void recordMessage(String topic, String payload, boolean retained) {
             messageCount++;
+            lastRetained = retained;
             if (payload != null && payload.trim().startsWith("{")) {
                 JsonObject json = JsonParser.parseString(payload).getAsJsonObject();
                 if (json.has("command_id")) commandIds.add(
@@ -786,6 +918,16 @@ public class MqttLifecycleServiceIngressTest {
             int count = 0;
             for (Event event : events) {
                 if (phase.equals(event.phase) && outcome.equals(event.outcome)) count++;
+            }
+            return count;
+        }
+
+        int count(String phase, String topicClass, String outcome) {
+            int count = 0;
+            for (Event event : events) {
+                if (phase.equals(event.phase)
+                        && topicClass.equals(event.topicClass)
+                        && outcome.equals(event.outcome)) count++;
             }
             return count;
         }
