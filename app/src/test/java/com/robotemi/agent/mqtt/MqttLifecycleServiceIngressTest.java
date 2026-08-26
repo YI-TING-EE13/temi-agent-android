@@ -75,7 +75,7 @@ public class MqttLifecycleServiceIngressTest {
 
     @Test
     public void retainedLegacySpeakIsRejectedBeforeActivityForwarding() {
-        Harness harness = new Harness();
+        Harness harness = new Harness(false, false, false, true);
         RecordingUiListener listener = attachListener(harness);
 
         harness.emitTopic(MqttTopicSet.ACTION_SPEAK, "{\"text\":\"retained\"}", true);
@@ -87,7 +87,7 @@ public class MqttLifecycleServiceIngressTest {
 
     @Test
     public void retainedLegacyNavigateIsRejectedBeforeActivityForwarding() {
-        Harness harness = new Harness();
+        Harness harness = new Harness(false, false, false, true);
         RecordingUiListener listener = attachListener(harness);
 
         harness.emitTopic(MqttTopicSet.ACTION_NAVIGATE, "{\"target\":\"kitchen\"}", true);
@@ -99,7 +99,7 @@ public class MqttLifecycleServiceIngressTest {
 
     @Test
     public void retainedLegacyWakeupIsRejectedBeforeActivityForwarding() {
-        Harness harness = new Harness();
+        Harness harness = new Harness(false, false, false, true);
         RecordingUiListener listener = attachListener(harness);
 
         harness.emitTopic(MqttTopicSet.ACTION_WAKEUP, "{\"word\":\"retained\"}", true);
@@ -134,6 +134,115 @@ public class MqttLifecycleServiceIngressTest {
         assertTrue(listener.lastRetained);
         assertEquals(0, harness.service.bufferedMessageCountForTest());
         assertEquals(0, harness.diagnostics.count("ingress", "retained_rejected"));
+    }
+
+    @Test
+    public void disabledLegacySpeakIsRejectedBeforeActivityForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_SPEAK, "{\"text\":\"disabled\"}");
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertLegacyDisabledRejected(harness, MqttIngressPolicy.LEGACY_DISABLED_SPEAK);
+    }
+
+    @Test
+    public void disabledLegacyNavigateIsRejectedBeforeActivityForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_NAVIGATE, "{\"target\":\"kitchen\"}");
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertLegacyDisabledRejected(harness, MqttIngressPolicy.LEGACY_DISABLED_NAVIGATE);
+    }
+
+    @Test
+    public void disabledLegacyWakeupIsRejectedBeforeActivityForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_WAKEUP, "{\"word\":\"disabled\"}");
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertLegacyDisabledRejected(harness, MqttIngressPolicy.LEGACY_DISABLED_WAKEUP);
+    }
+
+    @Test
+    public void disabledRetainedLegacyDeliveryUsesDisabledGateBeforeS1() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_SPEAK, "{\"text\":\"stale\"}", true);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertLegacyDisabledRejected(harness, MqttIngressPolicy.LEGACY_DISABLED_SPEAK);
+        assertEquals(0, harness.diagnostics.count(
+                "ingress", MqttIngressPolicy.RETAINED_LEGACY_SPEAK, "retained_rejected"));
+    }
+
+    @Test
+    public void enabledNonRetainedLegacyDeliveryRemainsForwarded() {
+        Harness harness = new Harness(false, false, false, true);
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_SPEAK, "{\"text\":\"enabled\"}");
+
+        assertEquals(1, listener.messageCount);
+        assertEquals("{\"text\":\"enabled\"}", listener.payloads.get(0));
+        assertEquals(0, harness.diagnostics.count("ingress", "legacy_disabled"));
+    }
+
+    @Test
+    public void enabledRetainedLegacyDeliveryRemainsRejectedByS1() {
+        Harness harness = new Harness(false, false, false, true);
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.emitTopic(MqttTopicSet.ACTION_SPEAK, "{\"text\":\"retained\"}", true);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertRetainedRejected(harness, MqttIngressPolicy.RETAINED_LEGACY_SPEAK);
+        assertEquals(0, harness.diagnostics.count(
+                "ingress", MqttIngressPolicy.LEGACY_DISABLED_SPEAK, "legacy_disabled"));
+    }
+
+    @Test
+    public void manuallyInjectedLegacyDeliveryFailsClosedWhenDisabled() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+
+        harness.connection.emitMessage(
+                MqttTopicSet.ACTION_NAVIGATE, "{\"target\":\"stale\"}", false);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertLegacyDisabledRejected(harness, MqttIngressPolicy.LEGACY_DISABLED_NAVIGATE);
+    }
+
+    @Test
+    public void canonicalCommandRemainsUnaffectedWhenLegacyActionsAreDisabled() {
+        Harness harness = new Harness();
+
+        harness.emit(speakPayload(
+                "event-canonical-disabled-legacy",
+                "cmd-canonical-disabled-legacy",
+                "action-canonical-disabled-legacy",
+                "canonical"));
+
+        assertEquals(1, harness.speech.requests.size());
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.diagnostics.count("ingress", "legacy_disabled"));
     }
 
     @Test
@@ -722,6 +831,12 @@ public class MqttLifecycleServiceIngressTest {
                 "ingress", topicClass, "retained_rejected"));
     }
 
+    private static void assertLegacyDisabledRejected(Harness harness, String topicClass) {
+        assertEquals(1, harness.diagnostics.count(
+                "ingress", topicClass, "legacy_disabled"));
+        assertEquals(0, harness.diagnostics.count("ingress", "retained_rejected"));
+    }
+
     private static void assertOversizedRejected(Harness harness) {
         assertEquals(1, harness.diagnostics.count("ingress", "oversized_payload"));
     }
@@ -796,6 +911,14 @@ public class MqttLifecycleServiceIngressTest {
         }
 
         Harness(boolean mediaEnabled, boolean residentIdentityEnabled, boolean careReportEnabled) {
+            this(mediaEnabled, residentIdentityEnabled, careReportEnabled, false);
+        }
+
+        Harness(
+                boolean mediaEnabled,
+                boolean residentIdentityEnabled,
+                boolean careReportEnabled,
+                boolean legacyActionsEnabled) {
             persistence = new MemoryPersistence();
             diagnostics = new RecordingDiagnostics();
             speech = new RecordingSpeechPort(persistence);
@@ -815,7 +938,7 @@ public class MqttLifecycleServiceIngressTest {
             connection.connected = true;
             broker = new SingleActiveMqttBroker(
                     factory, "client", service.brokerListenerForTest(),
-                    residentIdentityEnabled, careReportEnabled);
+                    residentIdentityEnabled, careReportEnabled, legacyActionsEnabled);
             service.bindBrokerForTest(broker);
             broker.apply(
                     MqttEndpointSelection.valid(

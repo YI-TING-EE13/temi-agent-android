@@ -11,6 +11,10 @@ if (localPropsFile.exists()) {
     localProps.load(new FileInputStream(localPropsFile))
 }
 def webSocketServerUrls = localProps.getProperty('ws.server.urls', '').trim()
+def legacyMqttActionsEnabled = localProps
+        .getProperty('legacy.mqtt.actions.enabled', 'false')
+        .trim()
+        .equalsIgnoreCase('true')
 
 // Demo signing is intentionally explicit and fail-closed. The ignored
 // signing.local.properties file is the only source of its four private inputs.
@@ -80,6 +84,8 @@ android {
                 "${localProps.getProperty('resident.identity.enabled', 'false')}"
         buildConfigField "boolean", "CARE_REPORT_ENABLED",
                 "${localProps.getProperty('care.report.enabled', 'false')}"
+        buildConfigField "boolean", "LEGACY_MQTT_ACTIONS_ENABLED",
+                legacyMqttActionsEnabled.toString()
     }
 
     buildTypes {

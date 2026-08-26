@@ -158,6 +158,28 @@ public class SingleActiveMqttBrokerTest {
     }
 
     @Test
+    public void legacyActionTopicsAreDisabledByDefaultAndExplicitlyOptIn() {
+        SingleActiveMqttBroker disabled =
+                new SingleActiveMqttBroker(factory, "client", listener, false, false);
+        disabled.apply(MqttEndpointSelection.valid(first), 0, null);
+
+        String[] disabledTopics = factory.subscriptions.get(0);
+        assertFalse(contains(disabledTopics, MqttTopicSet.ACTION_SPEAK));
+        assertFalse(contains(disabledTopics, MqttTopicSet.ACTION_NAVIGATE));
+        assertFalse(contains(disabledTopics, MqttTopicSet.ACTION_WAKEUP));
+
+        factory.subscriptions.clear();
+        SingleActiveMqttBroker enabled =
+                new SingleActiveMqttBroker(factory, "client", listener, false, false, true);
+        enabled.apply(MqttEndpointSelection.valid(first), 0, null);
+
+        String[] enabledTopics = factory.subscriptions.get(0);
+        assertTrue(contains(enabledTopics, MqttTopicSet.ACTION_SPEAK));
+        assertTrue(contains(enabledTopics, MqttTopicSet.ACTION_NAVIGATE));
+        assertTrue(contains(enabledTopics, MqttTopicSet.ACTION_WAKEUP));
+    }
+
+    @Test
     public void retainedMetadataIsForwardedAndInteractionPublishIsNonRetained() {
         broker.apply(MqttEndpointSelection.valid(first), 0, null);
         FakeConnection connection = factory.created.get(0);

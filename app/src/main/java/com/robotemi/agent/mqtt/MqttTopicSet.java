@@ -1,5 +1,8 @@
 package com.robotemi.agent.mqtt;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /** MQTT topics derived from the locally configured robot identity. */
 public final class MqttTopicSet {
     public static final String EVENT_ASR_LEGACY = "temi/event/asr";
@@ -15,17 +18,26 @@ public final class MqttTopicSet {
     private final String careReport;
     private final String careReportInteractionResult;
     private final boolean careReportEnabled;
+    private final boolean legacyActionsEnabled;
 
     public MqttTopicSet(String robotId) {
-        this(robotId, false, false);
+        this(robotId, false, false, false);
     }
 
     public MqttTopicSet(String robotId, boolean residentIdentityEnabled) {
-        this(robotId, residentIdentityEnabled, false);
+        this(robotId, residentIdentityEnabled, false, false);
     }
 
     public MqttTopicSet(
             String robotId, boolean residentIdentityEnabled, boolean careReportEnabled) {
+        this(robotId, residentIdentityEnabled, careReportEnabled, false);
+    }
+
+    public MqttTopicSet(
+            String robotId,
+            boolean residentIdentityEnabled,
+            boolean careReportEnabled,
+            boolean legacyActionsEnabled) {
         this.robotId = robotId;
         this.commandRequest = "temi/" + robotId + "/cmd/request";
         this.commandResult = "temi/" + robotId + "/cmd/result";
@@ -36,6 +48,7 @@ public final class MqttTopicSet {
         this.careReportInteractionResult =
                 "temi/" + robotId + "/care/report/interaction/result";
         this.careReportEnabled = careReportEnabled;
+        this.legacyActionsEnabled = legacyActionsEnabled;
     }
 
     public String robotId() {
@@ -62,40 +75,24 @@ public final class MqttTopicSet {
         return careReportInteractionResult;
     }
 
+    public boolean legacyActionsEnabled() {
+        return legacyActionsEnabled;
+    }
+
     public String[] subscribedTopics() {
-        if (residentIdentityEnabled && careReportEnabled) {
-            return new String[] {
-                    commandRequest,
-                    residentIdentityResult,
-                    careReport,
-                    ACTION_SPEAK,
-                    ACTION_NAVIGATE,
-                    ACTION_WAKEUP
-            };
-        }
+        List<String> topics = new ArrayList<>();
+        topics.add(commandRequest);
         if (residentIdentityEnabled) {
-            return new String[] {
-                    commandRequest,
-                    residentIdentityResult,
-                    ACTION_SPEAK,
-                    ACTION_NAVIGATE,
-                    ACTION_WAKEUP
-            };
+            topics.add(residentIdentityResult);
         }
         if (careReportEnabled) {
-            return new String[] {
-                    commandRequest,
-                    careReport,
-                    ACTION_SPEAK,
-                    ACTION_NAVIGATE,
-                    ACTION_WAKEUP
-            };
+            topics.add(careReport);
         }
-        return new String[] {
-            commandRequest,
-            ACTION_SPEAK,
-            ACTION_NAVIGATE,
-            ACTION_WAKEUP
-        };
+        if (legacyActionsEnabled) {
+            topics.add(ACTION_SPEAK);
+            topics.add(ACTION_NAVIGATE);
+            topics.add(ACTION_WAKEUP);
+        }
+        return topics.toArray(new String[0]);
     }
 }

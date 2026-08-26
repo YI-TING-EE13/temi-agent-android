@@ -219,7 +219,8 @@ public final class MqttLifecycleService extends Service {
                     endpoint -> MqttClientIdentity.forRobot(getPackageName(), endpoint.robotId()),
                     createBrokerListener(),
                     BuildConfig.RESIDENT_IDENTITY_ENABLED || BuildConfig.CARE_REPORT_ENABLED,
-                    BuildConfig.CARE_REPORT_ENABLED);
+                    BuildConfig.CARE_REPORT_ENABLED,
+                    BuildConfig.LEGACY_MQTT_ACTIONS_ENABLED);
         }
         clientId = MqttClientIdentity.forRobot(getPackageName(), "unconfigured");
         if (runtimeSettings == null) {
@@ -670,6 +671,14 @@ public final class MqttLifecycleService extends Service {
         }
         MqttEndpoint endpoint = broker == null ? null : broker.endpoint();
         MqttTopicSet topics = broker == null ? null : broker.topics();
+        String disabledLegacyRejectionCategory =
+                MqttIngressPolicy.disabledLegacyRejectionCategory(topics, topic);
+        if (disabledLegacyRejectionCategory != null) {
+            diagnostics.record(
+                    "ingress", disabledLegacyRejectionCategory, null, null, null,
+                    "REJECTED", "legacy_disabled", null);
+            return;
+        }
         String retainedRejectionCategory = MqttIngressPolicy.retainedRejectionCategory(
                 topics, topic, retained);
         if (retainedRejectionCategory != null) {
