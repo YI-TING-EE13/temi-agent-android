@@ -660,6 +660,14 @@ public final class MqttLifecycleService extends Service {
             String topic, String payload, boolean retained) {
         MqttEndpoint endpoint = broker == null ? null : broker.endpoint();
         MqttTopicSet topics = broker == null ? null : broker.topics();
+        String retainedRejectionCategory = MqttIngressPolicy.retainedRejectionCategory(
+                topics, topic, retained);
+        if (retainedRejectionCategory != null) {
+            diagnostics.record(
+                    "ingress", retainedRejectionCategory, null, null, null,
+                    "REJECTED", "retained_rejected", null);
+            return;
+        }
         if (endpoint != null && topics != null && topics.commandRequest().equals(topic)) {
             if (mediaV11ServiceRuntime != null
                     && MediaV11Parser.declaresMediaV11(payload)
