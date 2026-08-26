@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is the developer handoff for the TemiAgent Android publication candidate.
+This is the developer handoff for the public TemiAgent Android repository.
 Keep it focused on the Android project; do not treat external services as
 part of the Gradle build.
 
@@ -22,6 +22,8 @@ engineering evidence, not a substitute for current device acceptance.
 - The Gradle Wrapper is the source of truth for local Gradle execution.
 - The project uses Android Gradle Plugin 8.13.2, Gradle 8.13, compileSdk 34,
   minSdk 23, targetSdk 30, and Java 8 source/target compatibility.
+- JDK 21 is the verified and recommended Gradle runtime. JDK 25 is outside the
+  verified compatibility baseline.
 - Media v1.1 is enabled only by the tracked demo build type. Do not add a
   local.properties or IDE toggle for that feature.
 - Exercise videos are optional local deployment assets and are excluded from
@@ -68,8 +70,8 @@ contracts, camera, WebSocket, or command schemas.
 - AgentStateMachine.java: interaction states, timeout, and interruption.
 - mqtt/: broker lifecycle, topic contracts, validation, and durable delivery.
 - camera/: YUV copy, H.264 encoding, and camera ownership.
-- app/src/test/: JVM contract and lifecycle tests.
-- app/src/androidTest/: device-side instrumentation coverage.
+- app/src/test/: JVM contract and lifecycle tests. Instrumentation tests are
+  not currently included.
 
 ## Build and test
 
@@ -80,6 +82,8 @@ Run from the project root:
 
 The debug APK is app/build/outputs/apk/debug/app-debug.apk. A successful
 desktop build or JVM test run does not establish Temi device acceptance.
+The public GitHub Actions workflow runs the same JVM test and debug-build tasks
+on Ubuntu with JDK 21.
 
 The optional tools/verify_demo_artifact.ps1 helper expects a clean Git working
 tree, a generated Demo build, and local signing material. Its repository root
@@ -105,10 +109,8 @@ The Android publication includes app/, gradle/, the Gradle wrapper, root build
 configuration, tests, source resources, tools/, and public/developer docs.
 Private exercise videos are deliberately excluded and ignored.
 
-The current checkout also contains hermes_temi_bridge/, a separate historical
-reference service. It is outside this Android boundary, is not a build
-dependency, and is not modified by Android cleanup work. Exclude it before
-creating a standalone repository.
+Backend and bridge implementations are outside this repository and are not
+published here.
 
 Never publish local.properties, signing.local.properties, keystores,
 certificates, SDK paths, APK/AAB files, build directories, Gradle caches, logs,

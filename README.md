@@ -38,16 +38,15 @@ configured separately from this Android project.
 ## Requirements
 
 - Android SDK Platform 34.
-- A JDK supported by the installed Android Gradle Plugin. JDK 21 is the
-  recommended baseline for this project.
+- JDK 21, the verified and recommended Gradle runtime for this project.
 - The included Gradle Wrapper, using Gradle 8.13 and Android Gradle Plugin
   8.13.2.
 - Network access for the Temi SDK and other Maven dependencies.
 - A Temi robot for device runtime validation.
 
-The project keeps Java/Kotlin source and target compatibility at Java 8. The
-audit host also assembled the project with JDK 25.0.1; JDK 25 is not required
-by the project.
+The project keeps Java/Kotlin source and target compatibility at Java 8. JDK 21
+is the verified build runtime for local and CI execution. The audit-host JDK 25
+build failed, so JDK 25 is outside the verified compatibility baseline.
 
 ## Configuration
 
@@ -106,6 +105,10 @@ Optional local checks:
     .\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain --max-workers=1
     .\gradlew.bat :app:lintDebug --no-daemon --console=plain --max-workers=1
 
+The public GitHub Actions workflow runs the unit-test and debug-build tasks on
+Ubuntu with JDK 21. The workflow does not require signing material, a Temi
+robot, private services, or exercise media.
+
 The debug APK is written to:
 
     app/build/outputs/apk/debug/app-debug.apk
@@ -147,15 +150,14 @@ Not included:
 - Backend credentials, local signing material, local SDK paths, and generated
   APK/AAB/build outputs.
 
-The current checkout still contains a historical hermes_temi_bridge/ reference
-service for local contract work. It is outside the Android publication
-boundary, is not a Gradle build dependency, and was not modified in this
-cleanup. Exclude it before creating a standalone GitHub repository.
+The hermes_temi_bridge reference service and backend services are outside this
+repository and are not published here.
 
 ## Documentation map
 
 - README.md: public setup, build, runtime boundary, and limitations.
 - AGENTS.md: generalized developer handoff and safety invariants.
+- .github/workflows/android-ci.yml: public JDK 21 test and debug-build CI.
 - docs/publication-boundary.md: publication-set classification and remaining
   boundary review.
 - docs/performance/yuv-copy-optimization-2026-08-09.md: reproducible YUV copy
