@@ -9,7 +9,7 @@ part of the Gradle build.
 - Android project root: this directory.
 - Android module: app/.
 - Application ID: com.robotemi.agent.
-- Version: 1.0.0, versionCode 1.
+- Version: 1.0.2, versionCode 3.
 - Main entry point: app/src/main/java/com/robotemi/agent/MainActivity.java.
 - Temi SDK dependency: com.robotemi:sdk:1.134.1.
 
