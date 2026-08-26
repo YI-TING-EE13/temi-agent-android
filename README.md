@@ -81,6 +81,10 @@ demo variant uses the explicit demoSigning configuration. To build it, copy
 signing.local.properties.example to signing.local.properties and fill the four
 values using a local keystore stored outside this project.
 
+Normal debug builds remain debuggable for development. Signed Demo artifacts are
+explicitly non-debuggable, and tools/verify_demo_artifact.ps1 verifies this
+property from the packaged APK.
+
 The populated signing file, passwords, aliases, and keystore are local-only.
 Never commit them or print them in logs or documentation.
 

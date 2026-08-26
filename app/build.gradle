@@ -96,6 +96,7 @@ android {
 
         demo {
             initWith debug
+            debuggable false
             // Dependency/resource fallback only; signing is always demoSigning.
             matchingFallbacks = ['debug']
             signingConfig signingConfigs.demoSigning
