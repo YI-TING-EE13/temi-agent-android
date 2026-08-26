@@ -53,10 +53,12 @@ public final class MqttLifecycleService extends Service {
     private static final String TAG = "MqttLifecycleService";
     private static final String CHANNEL_ID = "temi_mqtt_connection";
     private static final int NOTIFICATION_ID = 4101;
-    private static final int MAX_BUFFERED_MESSAGES = 256;
+    private static final int MAX_BUFFERED_MESSAGES = MqttIngressLimits.MAX_BUFFERED_MESSAGES;
+    private static final long MAX_BUFFERED_BYTES = MqttIngressLimits.MAX_BUFFERED_BYTES;
 
     private final IBinder binder = new LocalBinder();
     private final ArrayDeque<InboundMessage> bufferedMessages = new ArrayDeque<>();
+    private long bufferedMessageBytes;
     @Nullable private SingleActiveMqttBroker broker;
     @Nullable private SingleActiveMqttBroker.Listener attachedListener;
     private MqttConnection.ConnectionState state = MqttConnection.ConnectionState.DISCONNECTED;
@@ -631,6 +633,7 @@ public final class MqttLifecycleService extends Service {
         attachedListenerRegistration = registration;
         List<InboundMessage> replay = new ArrayList<>(bufferedMessages);
         bufferedMessages.clear();
+        bufferedMessageBytes = 0L;
         for (InboundMessage message : replay) {
             listener.onMessage(message.topic, message.payload, message.retained);
         }
@@ -658,6 +661,13 @@ public final class MqttLifecycleService extends Service {
 
     private synchronized void onBrokerMessage(
             String topic, String payload, boolean retained) {
+        int payloadBytes = MqttIngressLimits.utf8ByteLength(payload);
+        if (payloadBytes > MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES) {
+            diagnostics.record(
+                    "ingress", "oversized_payload", null, null, null,
+                    "REJECTED", "oversized_payload", null);
+            return;
+        }
         MqttEndpoint endpoint = broker == null ? null : broker.endpoint();
         MqttTopicSet topics = broker == null ? null : broker.topics();
         String retainedRejectionCategory = MqttIngressPolicy.retainedRejectionCategory(
@@ -677,7 +687,7 @@ public final class MqttLifecycleService extends Service {
             }
             if (canonicalCommandIngress.ingest(payload, endpoint.robotId())) return;
         }
-        forwardMessage(topic, payload, retained);
+        forwardMessage(topic, payload, retained, payloadBytes);
     }
 
     private synchronized boolean onCanonicalCommandValidated(
@@ -785,16 +795,38 @@ public final class MqttLifecycleService extends Service {
         }
     }
 
-    private synchronized void forwardMessage(String topic, String payload, boolean retained) {
+    @VisibleForTesting
+    long bufferedBytesForTest() {
+        synchronized (this) {
+            return bufferedMessageBytes;
+        }
+    }
+
+    private synchronized void forwardMessage(
+            String topic, String payload, boolean retained, int payloadBytes) {
         if (attachedListener != null) {
             attachedListener.onMessage(topic, payload, retained);
             return;
         }
-        if (bufferedMessages.size() == MAX_BUFFERED_MESSAGES) bufferedMessages.removeFirst();
-        bufferedMessages.addLast(new InboundMessage(topic, payload, retained));
+        while (!bufferedMessages.isEmpty()
+                && (bufferedMessages.size() >= MAX_BUFFERED_MESSAGES
+                || bufferedMessageBytes + payloadBytes > MAX_BUFFERED_BYTES)) {
+            evictOldestBufferedMessage();
+        }
+        if (payloadBytes > MAX_BUFFERED_BYTES) return;
+        bufferedMessages.addLast(new InboundMessage(topic, payload, retained, payloadBytes));
+        bufferedMessageBytes += payloadBytes;
         diagnostics.record(
                 "ui_buffer", topicClass(topic), null, null, null,
                 "DETACHED", "buffered", null);
+    }
+
+    private void evictOldestBufferedMessage() {
+        InboundMessage evicted = bufferedMessages.removeFirst();
+        if (bufferedMessageBytes < evicted.payloadBytes) {
+            throw new IllegalStateException("mqtt_buffer_byte_accounting_underflow");
+        }
+        bufferedMessageBytes -= evicted.payloadBytes;
     }
 
     private synchronized void notifyAttachedConnected() {
@@ -939,11 +971,14 @@ public final class MqttLifecycleService extends Service {
         private final String topic;
         private final String payload;
         private final boolean retained;
+        private final int payloadBytes;
 
-        private InboundMessage(String topic, String payload, boolean retained) {
+        private InboundMessage(
+                String topic, String payload, boolean retained, int payloadBytes) {
             this.topic = topic;
             this.payload = payload;
             this.retained = retained;
+            this.payloadBytes = payloadBytes;
         }
     }
 }

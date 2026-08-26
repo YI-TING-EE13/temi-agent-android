@@ -137,6 +137,195 @@ public class MqttLifecycleServiceIngressTest {
     }
 
     @Test
+    public void payloadAtUtf8ByteLimitIsForwarded() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+        String payload = repeated("x", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+
+        harness.emitTopic("temi/temi-01/status", payload);
+
+        assertEquals(MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES, payload.length());
+        assertEquals(1, listener.messageCount);
+        assertEquals(MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES, listener.lastPayloadBytes);
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertEquals(0, harness.diagnostics.count("ingress", "oversized_payload"));
+    }
+
+    @Test
+    public void payloadOverUtf8ByteLimitIsRejectedBeforeForwarding() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+        String payload = repeated("x", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES + 1);
+
+        harness.emitTopic("temi/temi-01/status", payload);
+
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertOversizedRejected(harness);
+    }
+
+    @Test
+    public void multibytePayloadUsesUtf8BytesNotJavaStringLength() {
+        Harness harness = new Harness();
+        RecordingUiListener listener = attachListener(harness);
+        String payload = repeated("é", (MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES / 2) + 1);
+
+        harness.emitTopic("temi/temi-01/status", payload);
+
+        assertTrue(payload.length() < MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+        assertTrue(MqttIngressLimits.utf8ByteLength(payload)
+                > MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+        assertEquals(0, listener.messageCount);
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertOversizedRejected(harness);
+    }
+
+    @Test
+    public void oversizedCanonicalCommandIsRejectedBeforeSideEffects() {
+        Harness harness = new Harness();
+        String payload = oversizedSpeakPayload();
+
+        harness.emitTopic("temi/temi-01/cmd/request", payload);
+
+        assertTrue(MqttIngressLimits.utf8ByteLength(payload)
+                > MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+        assertEquals(0, harness.speech.requests.size());
+        assertNull(harness.persistence.record("cmd-oversized"));
+        assertEquals(0, harness.connection.publishAttempts);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertOversizedRejected(harness);
+    }
+
+    @Test
+    public void oversizedRetainedCommandIsRejectedBySizeGateBeforeRetainedGate() {
+        Harness harness = new Harness();
+        String payload = oversizedSpeakPayload();
+
+        harness.emitTopic("temi/temi-01/cmd/request", payload, true);
+
+        assertEquals(0, harness.speech.requests.size());
+        assertNull(harness.persistence.record("cmd-oversized"));
+        assertEquals(0, harness.connection.publishAttempts);
+        assertEquals(0, harness.service.bufferedBytesForTest());
+        assertOversizedRejected(harness);
+        assertEquals(0, harness.diagnostics.count("ingress", "retained_rejected"));
+    }
+
+    @Test
+    public void detachedBufferTracksPayloadBytesUnderBothLimits() {
+        Harness harness = new Harness();
+
+        harness.emitTopic("temi/temi-01/status", "abc");
+        harness.emitTopic("temi/temi-01/status", "12345");
+
+        assertEquals(2, harness.service.bufferedMessageCountForTest());
+        assertEquals(8, harness.service.bufferedBytesForTest());
+    }
+
+    @Test
+    public void detachedBufferPreservesCountEvictionAndDrainsBytes() {
+        Harness harness = new Harness();
+        long expectedBytes = 0;
+        for (int i = 0; i < MqttIngressLimits.MAX_BUFFERED_MESSAGES; i++) {
+            String payload = "message-" + i;
+            expectedBytes += MqttIngressLimits.utf8ByteLength(payload);
+            harness.emitTopic("temi/temi-01/status", payload);
+        }
+
+        assertEquals(MqttIngressLimits.MAX_BUFFERED_MESSAGES,
+                harness.service.bufferedMessageCountForTest());
+        assertEquals(expectedBytes, harness.service.bufferedBytesForTest());
+
+        String evictingPayload = "message-" + MqttIngressLimits.MAX_BUFFERED_MESSAGES;
+        expectedBytes -= MqttIngressLimits.utf8ByteLength("message-0");
+        expectedBytes += MqttIngressLimits.utf8ByteLength(evictingPayload);
+        harness.emitTopic("temi/temi-01/status", evictingPayload);
+
+        assertEquals(MqttIngressLimits.MAX_BUFFERED_MESSAGES,
+                harness.service.bufferedMessageCountForTest());
+        assertEquals(expectedBytes, harness.service.bufferedBytesForTest());
+
+        RecordingUiListener listener = attachListener(harness);
+        assertEquals(MqttIngressLimits.MAX_BUFFERED_MESSAGES, listener.messageCount);
+        assertEquals("message-1", listener.payloads.get(0));
+        assertEquals(evictingPayload,
+                listener.payloads.get(listener.payloads.size() - 1));
+        assertEquals(0, harness.service.bufferedBytesForTest());
+    }
+
+    @Test
+    public void detachedBufferCanReachExactByteBudget() {
+        Harness harness = new Harness();
+        String payload = repeated("x", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+
+        for (int i = 0; i < MqttIngressLimits.MAX_BUFFERED_BYTES
+                / MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES; i++) {
+            harness.emitTopic("temi/temi-01/status", payload);
+        }
+
+        assertEquals(16, harness.service.bufferedMessageCountForTest());
+        assertEquals(MqttIngressLimits.MAX_BUFFERED_BYTES,
+                harness.service.bufferedBytesForTest());
+    }
+
+    @Test
+    public void singleAllowedPayloadTriggersByteBudgetEviction() {
+        Harness harness = new Harness();
+        String firstPayload = repeated("a", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+        String secondPayload = repeated("b", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+        String evictingPayload = repeated("c", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES - 1);
+
+        for (int i = 0; i < 15; i++) {
+            harness.emitTopic("temi/temi-01/status", firstPayload);
+        }
+        harness.emitTopic("temi/temi-01/status", secondPayload);
+        harness.emitTopic("temi/temi-01/status", evictingPayload);
+
+        assertEquals(16, harness.service.bufferedMessageCountForTest());
+        assertEquals(MqttIngressLimits.MAX_BUFFERED_BYTES - 1,
+                harness.service.bufferedBytesForTest());
+        assertTrue(MqttIngressLimits.utf8ByteLength(evictingPayload)
+                <= MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+    }
+
+    @Test
+    public void attachingListenerClearsBufferedByteAccounting() {
+        Harness harness = new Harness();
+        harness.emitTopic("temi/temi-01/status", "one");
+        harness.emitTopic("temi/temi-01/status", "two");
+        assertEquals(6, harness.service.bufferedBytesForTest());
+
+        RecordingUiListener listener = attachListener(harness);
+
+        assertEquals(2, listener.messageCount);
+        assertEquals(0, harness.service.bufferedMessageCountForTest());
+        assertEquals(0, harness.service.bufferedBytesForTest());
+    }
+
+    @Test
+    public void repeatedByteBudgetEvictionNeverMakesAccountingNegative() {
+        Harness harness = new Harness();
+        String payload = repeated("x", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES);
+
+        for (int i = 0; i < 64; i++) {
+            harness.emitTopic("temi/temi-01/status", payload);
+            assertTrue(harness.service.bufferedBytesForTest() >= 0);
+            assertTrue(harness.service.bufferedBytesForTest()
+                    <= MqttIngressLimits.MAX_BUFFERED_BYTES);
+        }
+
+        assertEquals(16, harness.service.bufferedMessageCountForTest());
+        assertEquals(MqttIngressLimits.MAX_BUFFERED_BYTES,
+                harness.service.bufferedBytesForTest());
+        harness.emitTopic("temi/temi-01/status", "tiny");
+        assertTrue(harness.service.bufferedBytesForTest() >= 0);
+        assertTrue(harness.service.bufferedBytesForTest()
+                <= MqttIngressLimits.MAX_BUFFERED_BYTES);
+    }
+
+    @Test
     public void detachedMediaPlayIsConsumedByServiceInsteadOfUiBuffer() {
         Harness harness = new Harness(true);
 
@@ -533,6 +722,22 @@ public class MqttLifecycleServiceIngressTest {
                 "ingress", topicClass, "retained_rejected"));
     }
 
+    private static void assertOversizedRejected(Harness harness) {
+        assertEquals(1, harness.diagnostics.count("ingress", "oversized_payload"));
+    }
+
+    private static String oversizedSpeakPayload() {
+        return speakPayload(
+                "event-oversized", "cmd-oversized", "action-oversized",
+                repeated("s", MqttIngressLimits.MAX_INBOUND_PAYLOAD_BYTES));
+    }
+
+    private static String repeated(String value, int count) {
+        StringBuilder builder = new StringBuilder(value.length() * count);
+        for (int i = 0; i < count; i++) builder.append(value);
+        return builder.toString();
+    }
+
     private static String speakPayload(
             String eventId, String commandId, String actionId, String text) {
         return "{\"schema_version\":\"1.0\","
@@ -847,7 +1052,9 @@ public class MqttLifecycleServiceIngressTest {
     private static final class RecordingUiListener implements SingleActiveMqttBroker.Listener {
         int messageCount;
         boolean lastRetained;
+        int lastPayloadBytes;
         final List<String> commandIds = new ArrayList<>();
+        final List<String> payloads = new ArrayList<>();
 
         @Override
         public void onMessage(String topic, String payload) {
@@ -862,6 +1069,8 @@ public class MqttLifecycleServiceIngressTest {
         private void recordMessage(String topic, String payload, boolean retained) {
             messageCount++;
             lastRetained = retained;
+            lastPayloadBytes = MqttIngressLimits.utf8ByteLength(payload);
+            payloads.add(payload);
             if (payload != null && payload.trim().startsWith("{")) {
                 JsonObject json = JsonParser.parseString(payload).getAsJsonObject();
                 if (json.has("command_id")) commandIds.add(
