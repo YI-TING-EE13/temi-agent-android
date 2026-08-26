@@ -140,6 +140,9 @@ try {
     if (-not $packageMatch.Success -or $packageMatch.Groups[1].Value -ne $expectedPackage) {
         Stop-Preflight 'APK_PACKAGE_MISMATCH' 18
     }
+    if ($badgingText -match '(?m)^\s*application-debuggable(?:\s|$)') {
+        Stop-Preflight 'APK_DEBUGGABLE' 22
+    }
 
     $previousErrorActionPreference = $ErrorActionPreference
     try {
@@ -171,9 +174,9 @@ try {
         Stop-Preflight 'SIGNER_MISMATCH' 21
     }
 
-    Write-Output "ARTIFACT_PREFLIGHT_PASS package=$expectedPackage signer_sha256=$actualSignerSha256 source_head=$head media_v11_enabled=true attach_deadline_ms=10000"
+    Write-Output "ARTIFACT_PREFLIGHT_PASS package=$expectedPackage signer_sha256=$actualSignerSha256 source_head=$head media_v11_enabled=true attach_deadline_ms=10000 debuggable=false"
     exit 0
 } catch {
     Write-Output 'ARTIFACT_PREFLIGHT_FAIL reason=UNEXPECTED_PREFLIGHT_ERROR'
-    exit 22
+    exit 23
 }
