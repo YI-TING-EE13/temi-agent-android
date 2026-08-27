@@ -1,5 +1,13 @@
 # YUV Copy Performance Optimization — 2026-08-09
 
+> Status: HISTORICAL
+>
+> This document records evidence from 2026-08-09. Its test counts, machine
+> conditions, and acceptance state must not be treated as the current Android
+> baseline. For current test/build/device status, see
+> [CURRENT_STATUS.md](../CURRENT_STATUS.md) and
+> [VERIFIED_FEATURES.md](../VERIFIED_FEATURES.md).
+
 ## Scope
 
 This change reduces CPU time in the 1280x720 camera preprocessing step that

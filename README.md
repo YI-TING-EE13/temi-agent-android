@@ -19,7 +19,8 @@ interfaces.
 - Voice interaction using Android SpeechRecognizer, Temi ASR handoff, and TTS.
 - MQTT command and event messaging with reconnect, validation, idempotency, and
   durable result delivery.
-- Opt-in Resident Identity and Care Report contract consumers.
+- Source-supported Resident Identity and Care Report paths; both are disabled
+  in the accepted Demo baseline.
 - Callback-grounded playback of optional deployment-provided exercise media.
 - CameraX YUV capture, H.264 encoding, and WebSocket video delivery.
 - Safe handling for invalid, duplicate, cancelled, or interrupted commands.
@@ -32,8 +33,9 @@ interfaces.
             v
     External backend services
 
-The external services are interface dependencies only. They are deployed and
-configured separately from this Android project.
+The external services are interface dependencies only. Final Android/AI6
+compatibility remains pending the separate AI6 contract review; the services
+are deployed and configured separately from this Android project.
 
 ## Requirements
 
@@ -54,8 +56,8 @@ Run commands from this directory, the Android project root.
 
 1. Copy local.properties.example to local.properties.
 2. Set sdk.dir to the Android SDK directory on the current machine.
-3. Set ws.server.urls to one or more deployment-provided WebSocket endpoints,
-   separated by commas.
+3. Set ws.server.urls only when an authorized deployment provides WebSocket
+   endpoints. A normal public build does not require private WebSocket values.
 4. Leave resident.identity.enabled and care.report.enabled disabled unless the
    corresponding external contracts are available.
 5. Leave legacy.mqtt.actions.enabled=false unless a controlled LAB deployment
@@ -83,7 +85,10 @@ values using a local keystore stored outside this project.
 
 Normal debug builds remain debuggable for development. Signed Demo artifacts are
 explicitly non-debuggable, and tools/verify_demo_artifact.ps1 verifies this
-property from the packaged APK.
+property from the packaged APK. See
+[BUILD_AND_TEST.md](docs/operations/BUILD_AND_TEST.md) for the Demo build and
+preflight path and [SIGNING_HANDOVER.md](docs/operations/SIGNING_HANDOVER.md)
+for signing custody.
 
 The populated signing file, passwords, aliases, and keystore are local-only.
 Never commit them or print them in logs or documentation.
@@ -99,6 +104,11 @@ public repository. To enable the corresponding local media features, provide:
 These files are intentionally excluded from Git. The application remains
 buildable and startable when they are absent. A local media request reports
 that the deployment does not provide the requested video instead of crashing.
+
+### Demo build
+
+Demo is the canonical signed acceptance/deployment variant. The debug APK is
+for development only and is not the accepted Temi deployment artifact.
 
 ## Build
 
@@ -127,6 +137,9 @@ The debug APK is written to:
 
     app/build/outputs/apk/debug/app-debug.apk
 
+`app-debug.apk` = DEVELOPMENT ONLY. Use the signed Demo artifact for Temi
+acceptance or deployment.
+
 tools/verify_demo_artifact.ps1 validates a clean, signed Demo artifact. Run it
 with RepoRoot set to this project root. Its optional RequiredAncestor argument
 is only for a release process that intentionally requires a known history
@@ -134,18 +147,12 @@ baseline.
 
 ## Install and run
 
-Device validation requires a Temi robot and an endpoint owned by the operator:
-
-    adb connect <TEMI_IP>:<PORT>
-    adb devices
-    adb install -r app\build\outputs\apk\debug\app-debug.apk
-    adb shell pm grant com.robotemi.agent android.permission.CAMERA
-    adb shell pm grant com.robotemi.agent android.permission.RECORD_AUDIO
-    adb shell am start -n com.robotemi.agent/.MainActivity
-
-Do not put a real robot IP, ADB endpoint, or machine hostname in this
-document. Device acceptance is separate from desktop build and unit-test
-evidence.
+Device validation requires a Temi robot and an endpoint owned by the operator.
+The canonical accepted deployment uses the signed, non-debuggable Demo
+variant. Follow [ADB_AND_INSTALL.md](docs/operations/ADB_AND_INSTALL.md) for
+serial-scoped inspection, forward upgrade, launch, and post-install checks.
+That runbook uses placeholders and keeps device acceptance separate from
+desktop build and unit-test evidence.
 
 ## Repository scope
 
@@ -164,19 +171,46 @@ Not included:
 - Backend credentials, local signing material, local SDK paths, and generated
   APK/AAB/build outputs.
 
-The hermes_temi_bridge reference service and backend services are outside this
+External Hermes/Bridge reference services and backend services are outside this
 repository and are not published here.
 
 ## Documentation map
 
-- README.md: public setup, build, runtime boundary, and limitations.
-- AGENTS.md: generalized developer handoff and safety invariants.
-- .github/workflows/android-ci.yml: public JDK 21 test and debug-build CI.
-- docs/publication-boundary.md: publication-set classification and remaining
-  boundary review.
-- docs/performance/yuv-copy-optimization-2026-08-09.md: reproducible YUV copy
-  performance note with private machine details removed.
-- tools/: local build and artifact verification helpers.
+- [Current status](docs/CURRENT_STATUS.md): accepted evidence, build/Demo
+  contract, current gaps, and evidence vocabulary.
+- [Repository map](docs/REPOSITORY_MAP.md): source, test, configuration,
+  documentation, and external-dependency map.
+- [Verified features](docs/VERIFIED_FEATURES.md): evidence-level feature
+  matrix.
+- [Android architecture](docs/architecture/ANDROID_ARCHITECTURE.md): current
+  component ownership and lifecycle boundaries.
+- [Temi SDK usage map](docs/architecture/TEMI_SDK_USAGE_MAP.md): SDK types,
+  calls, callbacks, and physical-side-effect boundaries.
+- [MQTT interface](docs/contracts/MQTT_INTERFACE.md): Android topic,
+  connection, ingress, and publication contract.
+- [Command contract](docs/contracts/COMMAND_CONTRACT.md): canonical command
+  and result schema, validation, and recovery behavior.
+- [Configuration contract](docs/contracts/CONFIGURATION_CONTRACT.md): tracked,
+  local, device, private, and external configuration ownership.
+- [Build and test](docs/operations/BUILD_AND_TEST.md): supported toolchain,
+  tests, variants, signing gate, and artifact preflight.
+- [ADB and install](docs/operations/ADB_AND_INSTALL.md): safe inspection,
+  forward upgrade, launch, and targeted restart.
+- [Troubleshooting](docs/operations/TROUBLESHOOTING.md): failure-first
+  diagnosis and recovery boundaries.
+- [Release checklist](docs/operations/RELEASE_CHECKLIST.md): candidate and
+  publication gate.
+- [Signing handover](docs/operations/SIGNING_HANDOVER.md): private signing
+  custody and public verification identity.
+- [Junior handover](docs/handover/JUNIOR_HANDOVER.md): maintainer landing page
+  and reading order.
+- [Publication boundary](docs/publication-boundary.md): public-set
+  classification and exclusions.
+- [Historical performance note](docs/performance/yuv-copy-optimization-2026-08-09.md):
+  HISTORICAL YUV-copy evidence.
+- [.github/workflows/android-ci.yml](.github/workflows/android-ci.yml): public
+  JDK 21 test and debug-build CI.
+- [tools/](tools/): local build and artifact verification helpers.
 
 ## Known limitations
 
@@ -192,8 +226,11 @@ repository and are not published here.
 - Robot navigation arrival and physical turn completion are not observed by the
   Android result contract.
 - Camera streaming depends on a configured external WebSocket service.
-- Resident Identity and Care Report consumers are opt-in and require their
-  external contracts.
+- Resident Identity and Care Report source paths are opt-in; both are disabled
+  in the accepted Demo baseline and lack current external/device E2E
+  acceptance.
+- Final Android/AI6 compatibility remains pending the AI6 freeze and separate
+  contract review.
 - The target SDK remains 30 and Java/Kotlin source compatibility remains Java 8;
   this cleanup does not modernize the toolchain.
 

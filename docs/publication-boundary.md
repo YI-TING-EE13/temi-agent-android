@@ -18,11 +18,11 @@ or a parent settings/build file.
 
 ## Explicit exclusions
 
-The current working tree also contains hermes_temi_bridge/. It is a separate
-historical reference service, not Android source, not a Gradle dependency, and
-not part of the intended standalone Android repository. It remains untouched
-because backend and Bridge work are outside this cleanup. Exclude it before
-exporting or creating the standalone repository.
+During the original export/publication cleanup, `hermes_temi_bridge/` was
+treated as an excluded historical/reference service and was not included in the
+standalone public Android repository. It is not part of the current standalone
+tree. Backend and Bridge services remain external dependencies and are outside
+the Android publication boundary.
 
 The following are always local-only or generated:
 
@@ -36,9 +36,12 @@ The following are always local-only or generated:
 
 - README.md: PUBLIC_DOCUMENTATION.
 - AGENTS.md: DEVELOPER_DOCUMENTATION, generalized for publication.
+- docs/CURRENT_STATUS.md, docs/REPOSITORY_MAP.md, and
+  docs/VERIFIED_FEATURES.md: CURRENT_DOCUMENTATION and evidence map.
+- docs/architecture/, docs/contracts/, docs/operations/, and docs/handover/:
+  CURRENT_DOCUMENTATION for architecture, contracts, operations, and handover.
 - docs/performance/yuv-copy-optimization-2026-08-09.md:
-  PUBLIC_DOCUMENTATION with historical machine-specific details removed.
-- hermes_temi_bridge/: PRIVATE_OPERATIONAL_NOTE and OUT_OF_PUBLICATION_SCOPE.
+  HISTORICAL_DOCUMENTATION with historical machine-specific details removed.
 
 This file is a boundary record, not permission to publish the excluded
 reference service or any machine-local configuration.
