@@ -1,8 +1,10 @@
 # Repository Map
 
 This map describes the **CURRENT** standalone Android repository at the
-accepted baseline in [CURRENT_STATUS.md](./CURRENT_STATUS.md). Classifications
-are deliberately limited to the task vocabulary: `CURRENT_SOURCE`,
+documentation-inclusive GitHub `main` recorded in
+[CURRENT_STATUS.md](./CURRENT_STATUS.md). The accepted implementation/runtime
+baseline is recorded separately in that current-status document.
+Classifications are deliberately limited to the task vocabulary: `CURRENT_SOURCE`,
 `CURRENT_TEST`, `CURRENT_CONFIG`, `CURRENT_TOOL`, `CURRENT_DOC`,
 `HISTORICAL_DOC`, `GENERATED_NOT_TRACKED`, `PRIVATE_NOT_TRACKED`, and
 `EXTERNAL_DEPENDENCY`.
@@ -87,6 +89,10 @@ evidence, not a physical Temi or full-stack AI6 result.
 | [`docs/CURRENT_STATUS.md`](./CURRENT_STATUS.md) | `CURRENT_DOC` | Accepted repository, build, Demo, device, MQTT-side evidence, and gaps. |
 | [`docs/REPOSITORY_MAP.md`](./REPOSITORY_MAP.md) | `CURRENT_DOC` | This source-oriented map. |
 | [`docs/VERIFIED_FEATURES.md`](./VERIFIED_FEATURES.md) | `CURRENT_DOC` | Evidence-level feature matrix. |
+| [`docs/architecture/`](./architecture/) | `CURRENT_DOC` | Android component ownership, lifecycle, and Temi SDK usage maps. |
+| [`docs/contracts/`](./contracts/) | `CURRENT_DOC` | Android MQTT, command, and configuration contracts. |
+| [`docs/operations/`](./operations/) | `CURRENT_DOC` | Build, install, troubleshooting, release, and signing runbooks. |
+| [`docs/handover/JUNIOR_HANDOVER.md`](./handover/JUNIOR_HANDOVER.md) | `CURRENT_DOC` | Junior maintainer landing page and documentation reading order. |
 | `docs/publication-boundary.md` | `CURRENT_DOC` | Publication-set boundary and exclusions. |
 | `docs/performance/yuv-copy-optimization-2026-08-09.md` | `HISTORICAL_DOC` | Historical performance evidence; not current device acceptance. |
 | `tools/verify_demo_artifact.ps1` | `CURRENT_TOOL` | Local Demo package, signer, policy, and provenance preflight. |

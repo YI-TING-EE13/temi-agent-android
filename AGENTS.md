@@ -17,6 +17,21 @@ README.md is the public setup guide. docs/publication-boundary.md records the
 publication-set decision. The performance note under docs/ is historical
 engineering evidence, not a substitute for current device acceptance.
 
+## Documentation authority
+
+When documentation or handover notes appear to conflict, consult the sources
+in this order:
+
+1. Current source, configuration, and tests.
+2. [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md).
+3. [docs/VERIFIED_FEATURES.md](docs/VERIFIED_FEATURES.md).
+4. [docs/contracts/](docs/contracts/).
+5. [docs/operations/](docs/operations/).
+6. Historical notes, including the performance record.
+
+Historical evidence provides context only. It must not override current source
+or current-status documentation.
+
 ## Build invariants
 
 - The Gradle Wrapper is the source of truth for local Gradle execution.
@@ -80,8 +95,11 @@ Run from the project root:
     .\gradlew.bat :app:assembleDebug --no-daemon --console=plain --max-workers=1
     .\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain --max-workers=1
 
-The debug APK is app/build/outputs/apk/debug/app-debug.apk. A successful
-desktop build or JVM test run does not establish Temi device acceptance.
+The debug APK is app/build/outputs/apk/debug/app-debug.apk and is DEVELOPMENT
+ONLY. A successful desktop build or JVM test run does not establish Temi device
+acceptance. The canonical accepted deployment artifact is the signed,
+non-debuggable Demo variant; see docs/operations/BUILD_AND_TEST.md and
+docs/operations/SIGNING_HANDOVER.md.
 The public GitHub Actions workflow runs the same JVM test and debug-build tasks
 on Ubuntu with JDK 21.
 
@@ -92,12 +110,23 @@ be supplied explicitly when a release process needs that check.
 
 ## Device validation
 
-Device work is separate from publication cleanup. If an operator performs it,
-use only an explicitly owned endpoint:
+Device work is separate from documentation and desktop build checks. Before
+touching a real Temi, read
+[docs/operations/ADB_AND_INSTALL.md](docs/operations/ADB_AND_INSTALL.md).
 
-    adb connect <TEMI_IP>:<PORT>
-    adb devices
-    adb install -r app\build\outputs\apk\debug\app-debug.apk
+Development:
+
+- Use `assembleDebug` and the JVM tests for local development and compile
+  checks.
+- Treat `app-debug.apk` as DEVELOPMENT ONLY.
+
+Deployment acceptance:
+
+- Use an authorized, signed, non-debuggable Demo artifact.
+- Confirm ownership of one exact serial `<TEMI_IP>:<ADB_PORT>` and use
+  `adb -s <SERIAL>` for every package or shell command.
+- Follow the runbook’s forward-upgrade, signer, preservation, launch, and
+  bounded-diagnostics checks.
 
 Do not publish a real ADB endpoint or machine hostname. Do not use broad ADB
 server ownership changes when another operator may be connected. Confirm
@@ -121,5 +150,5 @@ captures, recordings, or temporary reports.
 Work from this project root and verify local paths before editing. Do not
 assume a parent SDK checkout, linked worktree, remote URL, branch name, or
 historical root document exists. Keep changes narrow, preserve unrelated
-working-tree state, and do not perform repository history or remote operations
-as part of an Android publication cleanup.
+working-tree state, and do not perform unrequested repository history or
+remote operations as part of an Android publication cleanup.

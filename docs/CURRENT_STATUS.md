@@ -14,13 +14,19 @@ and the source-oriented tree is in [REPOSITORY_MAP.md](./REPOSITORY_MAP.md).
 | --- | --- |
 | Repository | `YI-TING-EE13/temi-agent-android` |
 | Canonical branch | `main` |
-| Accepted HEAD | `8c458888657efca5384c6d51e5ec57e8b385d987` |
+| Accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
+| Current documentation HEAD | See the repository's current `main` branch |
 | Android package | `com.robotemi.agent` |
 | Version | `1.0.2` / `versionCode 3` |
 | Status date | `2026-08-27` |
 
-The accepted baseline is this exact `main` commit. A newer commit on `main`
-requires a fresh re-acceptance before it can replace this current accepted
+The accepted implementation/runtime evidence remains tied to
+`8c458888657efca5384c6d51e5ec57e8b385d987`. Documentation-only commits after
+that baseline do not invalidate the previously accepted APK or physical-device
+evidence. The literal current documentation-inclusive HEAD should be read from
+the repository's current GitHub `main` branch, rather than hardcoded in this
+current-status document. Any future Android source or runtime change requires
+fresh re-acceptance before it can replace the accepted implementation/runtime
 baseline.
 
 ## Verified build baseline
@@ -128,7 +134,6 @@ are present.
 
 Only the following are current gaps for handover:
 
-- Canonical operator and handover runbooks are still being built.
 - Final Android/AI6 contract compatibility review is pending the AI6 freeze.
 - Release and tag policy is not yet finalized.
 - Signing private-key custody remains an out-of-band operator responsibility.
