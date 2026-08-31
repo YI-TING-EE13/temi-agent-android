@@ -105,9 +105,11 @@ Fresh clones contain both files, and the fixed media IDs remain
 `elderly_hand_exercise` and `elderly_leg_exercise`. The resolver retains
 defensive missing-resource handling: if a generated APK lacks a resource, the
 request reports `media_unavailable:<media_id>` instead of crashing. Physical
-Temi playback is not verified by V4E; the 1.0.5 top-safe-area change is
-build-verified only, and physical coordinate-tap and hand/leg playback
-acceptance is deferred to V4F.
+Temi coordinate-tap playback is `VERIFIED_DEVICE` for the installed 1.0.5/code6
+candidate: V4H recorded visible, advancing, naturally completed hand and leg
+videos. Physical acceptance requires `MainActivity` to be resumed and its
+window focused; `StandbyActivity` can be the foreground owner and should be
+checked during diagnosis and operator readiness.
 
 ### Demo build
 
@@ -226,8 +228,10 @@ repository and are not published here.
 - Media playback accepts only the allowlisted exercise identifiers; arbitrary
   URLs, filesystem paths, and content URIs are rejected.
 - The two project-owned exercise videos are packaged in the V4E 1.0.5/code6
-  release candidate. The top-safe-area change is build-verified; physical
-  coordinate-tap and hand/leg playback remain not `VERIFIED_DEVICE` until V4F.
+  release candidate, and V4F/V4H accepted the top-safe-area placement plus
+  hand/leg coordinate-tap playback on the installed candidate. The full
+  canonical broker/AI6/Temi playback path remains outside that bounded local
+  `VERIFIED_DEVICE` evidence.
 - Robot navigation arrival and physical turn completion are not observed by the
   Android result contract.
 - Camera streaming depends on a configured external WebSocket service.
