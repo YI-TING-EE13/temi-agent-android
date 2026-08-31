@@ -80,11 +80,14 @@ artifact, and signing gates.
 - V4H kept `MainActivity` foreground for at least `27584 ms` across `47`
   samples. No autonomous `StandbyActivity` takeover was observed during that
   bounded monitor. MQTT settings coordinate control also passed.
-- Bounded owner-provided Android-to-AI6 evidence was recorded against AI6 root
-  `/home/yiting/TemiAgent`, branch `main`, HEAD
-  `12aff3bfdfe526c17a25a2681aea2afad7112b33`. `scripts/demo start` passed,
-  `scripts/demo status` reached `DEMO_READY`, and `scripts/demo doctor` passed.
-  The bounded path covers MQTT connectivity, WebSocket client
+- Bounded owner-provided Android-to-AI6 evidence was recorded against an
+  externally owned AI6 runtime; its canonical machine-local root remains out
+  of band. External owner-provided provenance records branch `main`, accepted
+  HEAD `12aff3bfdfe526c17a25a2681aea2afad7112b33`.
+- Canonical AI6 lifecycle start gate: `PASS`.
+- Canonical AI6 runtime status: `DEMO_READY`.
+- Canonical AI6 doctor/health gate: `PASS`.
+- The bounded path covers MQTT connectivity, WebSocket client
   creation/connection, Temi-to-AI6 connectivity, camera frame input, H.264
   output, binary send, AI6 H.264 ingress, non-empty `VisionBuffer`, and viewer
   frames. This evidence is not universal compatibility.

@@ -241,12 +241,13 @@ The following owner-provided evidence is recorded at bounded integration
 granularity. It is not a claim that every Android command or robot action is
 end-to-end accepted:
 
-- AI6 canonical root: `/home/yiting/TemiAgent` (external owner path).
-- AI6 branch: `main`.
-- AI6 accepted HEAD: `12aff3bfdfe526c17a25a2681aea2afad7112b33`.
-- `scripts/demo start`: `PASS`.
-- `scripts/demo status`: `DEMO_READY`.
-- `scripts/demo doctor`: `PASS`.
+- AI6 runtime: externally owned; its canonical machine-local root remains out
+  of band.
+- External owner-provided AI6 provenance: branch `main`, accepted HEAD
+  `12aff3bfdfe526c17a25a2681aea2afad7112b33`.
+- Canonical AI6 lifecycle start gate: `PASS`.
+- Canonical AI6 runtime status: `DEMO_READY`.
+- Canonical AI6 doctor/health gate: `PASS`.
 - Accepted bounded path: Android MQTT connectivity, WebSocket client
   creation/connection, Temi-to-AI6 WebSocket connectivity, camera frame input,
   H.264 output, WebSocket binary send, AI6 H.264 ingress, non-empty
