@@ -14,10 +14,10 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 - [ ] `git diff --check`, `git diff --stat`, and the full diff review pass.
 - [ ] The candidate changes only the intended files and contains no Android
       source, test, generated output, or private configuration changes.
-- [ ] `versionCode` and `versionName` are deliberate and recorded. The current
-      accepted application identity is `com.robotemi.agent`, versionCode 3,
-      versionName 1.0.2; do not copy those values into a new release without
-      checking the source.
+- [ ] `versionCode` and `versionName` are deliberate and recorded. The V4A
+      repository release candidate is `com.robotemi.agent`, versionCode 5,
+      versionName 1.0.4; the current physical Temi baseline remains versionCode
+      4, versionName 1.0.3 until V4B.
 
 ## Tests
 
@@ -54,7 +54,8 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 
 - [ ] `local.properties` is not tracked or included in the candidate.
 - [ ] `signing.local.properties` is not tracked or included in the candidate.
-- [ ] No private exercise media was accidentally added to the repository.
+- [ ] The two owner-authorized exercise videos are the only binary media added;
+      no unapproved media was added to the repository.
 - [ ] No APK or AAB is committed unless a separate publication policy
       explicitly requires it.
 - [ ] No password, credential, private endpoint, real Temi address, private
@@ -101,7 +102,7 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 ## Stop conditions
 
 Stop and ask the project owner when the signer is wrong or unavailable, the
-version is not forward, the target identity is uncertain, a private asset is
-missing, a required CI result is not terminal, or a requested recovery would
+version is not forward, the target identity is uncertain, an owner-authorized
+media resource is missing, a required CI result is not terminal, or a requested recovery would
 require uninstalling or clearing data. The project has no finalized automatic
 rollback or tag policy; do not invent one in the release record.

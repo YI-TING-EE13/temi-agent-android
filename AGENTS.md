@@ -9,7 +9,8 @@ part of the Gradle build.
 - Android project root: this directory.
 - Android module: app/.
 - Application ID: com.robotemi.agent.
-- Version: 1.0.2, versionCode 3.
+- Repository release candidate: 1.0.4, versionCode 5.
+- Current physical Temi baseline before V4B: 1.0.3, versionCode 4.
 - Main entry point: app/src/main/java/com/robotemi/agent/MainActivity.java.
 - Temi SDK dependency: com.robotemi:sdk:1.134.1.
 
@@ -41,9 +42,8 @@ or current-status documentation.
   verified compatibility baseline.
 - Media v1.1 is enabled only by the tracked demo build type. Do not add a
   local.properties or IDE toggle for that feature.
-- Exercise videos are optional local deployment assets and are excluded from
-  this public repository. Missing resources must report unavailable media
-  without crashing the app.
+- The project-produced exercise videos are tracked public resources. Missing
+  resources must still report unavailable media without crashing the app.
 - Demo signing is explicit and fail-closed. It reads only the ignored
   signing.local.properties file and an absolute keystore path outside this
   project. Never commit, print, or post signing values.
@@ -136,7 +136,9 @@ endpoint ownership before any install or runtime test.
 
 The Android publication includes app/, gradle/, the Gradle wrapper, root build
 configuration, tests, source resources, tools/, and public/developer docs.
-Private exercise videos are deliberately excluded and ignored.
+Project-produced exercise videos are included in the public publication as
+tracked resources. Private deployment configuration and generated artifacts
+remain excluded.
 
 Backend and bridge implementations are outside this repository and are not
 published here.

@@ -203,14 +203,15 @@ effect.
 
 ## Media unavailable
 
-The allowlisted exercise media resources are optional deployment assets. A
+The allowlisted exercise media resources are tracked project-owned assets. A
 missing `elderly_hand_exercise` or `elderly_leg_exercise` resource produces a
 `media_unavailable:<media_id>` result; it does not authorize a URL, arbitrary
 file path, content URI, or bypass.
 
-Check that the authorized Demo build included the private deployment media and
-that the command uses the fixed media ID. Do not publish the video contents or
-copy private media into tracked source solely to make a test pass.
+Check that the fresh clone contains both raw-resource paths, that the
+authorized Demo APK contains both `res/raw` entries, and that the command uses
+the fixed media ID. Do not replace either project-owned video or add an
+arbitrary media source solely to make a test pass.
 
 ## Resident Identity and Care
 

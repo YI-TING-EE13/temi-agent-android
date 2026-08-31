@@ -142,8 +142,8 @@ can reapply the local stop behavior.
 ## Media boundary
 
 Generic schema 1.0 play_media accepts only the two fixed media IDs and
-resolves a packaged raw resource. Optional exercise resources are deployment
-assets; a missing resource returns media_unavailable:<media_id>.
+resolves one of the two tracked project-owned raw resources. A missing resource
+still returns media_unavailable:<media_id> as defensive handling.
 
 Media schema 1.1 is handled by MediaV11ServiceRuntime. The runtime has one
 active playback session, serialized play operations, active-session controls,

@@ -4,8 +4,8 @@
 
 The standalone Android publication consists of:
 
-- app/ source, tests, and source resources. Optional private exercise videos
-  are excluded.
+- app/ source, tests, and source resources, including the two project-produced
+  exercise videos authorized for public publication.
 - gradle/ and the Gradle Wrapper.
 - Root Android build configuration and gradle.properties.
 - README.md, AGENTS.md, docs/, and tools/.
@@ -27,10 +27,18 @@ the Android publication boundary.
 The following are always local-only or generated:
 
 - local.properties and signing.local.properties.
-- app/src/main/res/raw/elderly_hand_exercise.mp4 and
-  app/src/main/res/raw/elderly_leg_exercise.mp4.
 - Keystores, certificates, passwords, aliases, and SDK paths.
 - .gradle/, build/, APK/AAB files, captures, recordings, logs, and reports.
+
+The following project-owned resources are part of the intended public
+publication and must remain tracked:
+
+- app/src/main/res/raw/elderly_hand_exercise.mp4.
+- app/src/main/res/raw/elderly_leg_exercise.mp4.
+
+Fresh clones must contain both resources. Their fixed media IDs remain
+`elderly_hand_exercise` and `elderly_leg_exercise`; physical Temi playback is
+not promoted to `VERIFIED_DEVICE` by this publication change.
 
 ## Documentation classification
 
