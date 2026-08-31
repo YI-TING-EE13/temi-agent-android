@@ -28,17 +28,18 @@ boundaries. Do not infer an external service procedure from an Android class.
 Read the following documents in order. The links are relative to this
 handover page:
 
-1. [Current status](../CURRENT_STATUS.md)
-2. [Repository map](../REPOSITORY_MAP.md)
-3. [Verified features](../VERIFIED_FEATURES.md)
-4. [Android architecture](../architecture/ANDROID_ARCHITECTURE.md)
-5. [MQTT interface](../contracts/MQTT_INTERFACE.md)
-6. [Command contract](../contracts/COMMAND_CONTRACT.md)
-7. [Configuration contract](../contracts/CONFIGURATION_CONTRACT.md)
-8. [Build and test](../operations/BUILD_AND_TEST.md)
-9. [ADB and install](../operations/ADB_AND_INSTALL.md)
-10. [Troubleshooting](../operations/TROUBLESHOOTING.md)
-11. [Release checklist](../operations/RELEASE_CHECKLIST.md)
+1. [Handover readiness](HANDOVER_READINESS.md)
+2. [Current status](../CURRENT_STATUS.md)
+3. [Repository map](../REPOSITORY_MAP.md)
+4. [Verified features](../VERIFIED_FEATURES.md)
+5. [Android architecture](../architecture/ANDROID_ARCHITECTURE.md)
+6. [MQTT interface](../contracts/MQTT_INTERFACE.md)
+7. [Command contract](../contracts/COMMAND_CONTRACT.md)
+8. [Configuration contract](../contracts/CONFIGURATION_CONTRACT.md)
+9. [Build and test](../operations/BUILD_AND_TEST.md)
+10. [ADB and install](../operations/ADB_AND_INSTALL.md)
+11. [Troubleshooting](../operations/TROUBLESHOOTING.md)
+12. [Release checklist](../operations/RELEASE_CHECKLIST.md)
 
 Read [Demo signing handover](../operations/SIGNING_HANDOVER.md) before
 creating or distributing a Demo artifact.
@@ -49,13 +50,15 @@ Start with a public clone and a development-only build. Run from the cloned
 repository root on the maintainer workstation:
 
 ```text
-git clone <PUBLIC_REPOSITORY_URL>
+git clone https://github.com/YI-TING-EE13/temi-agent-android.git
 cd temi-agent-android
 Copy-Item .\local.properties.example .\local.properties
 ```
 
-Set `sdk.dir=<ANDROID_SDK_PATH>` in the local file. Use JDK 21, then run the
-JVM tests and the debug build:
+Set only `sdk.dir=<ANDROID_SDK_PATH>` in the local file for the first-day
+workflow. The copied template leaves `ws.server.urls` unset, so the generated
+`WS_SERVER_URLS` value is empty and no private WebSocket endpoint is required.
+Use JDK 21, then run the JVM tests and the debug build:
 
 ```text
 .\gradlew.bat :app:testDebugUnitTest --no-daemon --console=plain --max-workers=1
@@ -68,6 +71,17 @@ endpoint, an MQTT endpoint, an AI6 host, or a live Temi.
 
 The debug APK is for development only. Demo signing and device installation
 are separate gates.
+
+## Activity foreground readiness
+
+Activity-owned physical checks require `MainActivity` to be resumed and its
+window to be focused. Before diagnosing exercise media, camera capture, or
+WebSocket streaming, check the resumed activity, top activity, and focused
+window with the serial-scoped commands in
+[ADB_AND_INSTALL.md](../operations/ADB_AND_INSTALL.md). `StandbyActivity` can
+be the current foreground owner. Check that state during operator readiness;
+do not claim that `StandbyActivity` always automatically takes foreground.
+V4H observed no autonomous takeover during its bounded monitor.
 
 ## Before touching a real Temi
 
@@ -107,6 +121,37 @@ Activity observes that service and owns the screen, Temi listeners, camera,
 WebSocket lifecycle, and Activity-side command work. MQTT endpoint values are
 device-local runtime settings. Do not document AI6 implementation commands or
 assume that an Android-side command result proves backend behavior.
+
+## MQTT runtime setup
+
+The current app exposes three MQTT endpoint fields in the `MQTT settings` panel:
+
+| App field | Value to obtain from the deployment owner |
+| --- | --- |
+| Broker host | `<MQTT_HOST>` without a scheme or path |
+| Broker port | `<MQTT_PORT>` from 1 through 65535 |
+| Robot ID | `<ROBOT_ID>` matching the device assignment |
+
+On an authorized device, confirm `MainActivity` is resumed and focused, open
+`MQTT settings`, enter the three values, and tap `Apply`. The app validates and
+stores one endpoint in app-private runtime settings and asks the
+`MqttLifecycleService` broker to reconnect. A valid configuration is reflected
+by the app's MQTT status; broker-side reachability and authentication remain
+external checks. `Disable` removes the active endpoint. Pending command, media,
+or care results can block an endpoint change or disable operation until the
+outbox is delivered or an explicitly authorized operator discards it.
+
+MQTT host, port, and robot ID are device-local values. They are not tracked in
+Git and normally do not require an APK rebuild. Android backup and restore are
+disabled, so a new device or robot requires explicit runtime configuration.
+For a public first-day build, leave MQTT disabled rather than entering example
+placeholders. Verify an authorized deployment with its owner-provided endpoint
+and record only redacted status/evidence.
+
+Escalate a broker, MQTT runtime, or Android-to-AI6 connectivity issue to the
+MQTT or AI6 runtime owner. Escalate an app settings, UI, or Activity readiness
+issue to the Android/LAB606 maintainer. Do not invent a private endpoint or
+restart an external service from this repository's runbook.
 
 ## Feature state
 
@@ -166,9 +211,11 @@ Ask the project owner or the relevant boundary owner before changing:
 Also ask before restarting an external broker, backend, Hermes, Bridge, LM
 Studio, or AI6 service. This Android repository does not own those processes.
 
-## External final contract
+## External compatibility boundary
 
-AI6 final operational compatibility is tracked separately and must be synced
-after the AI6 freeze. The Android documentation does not define final backend
-commands. Do not invent a backend payload or claim full-stack acceptance from
-an Android-only test.
+Owner-provided bounded Android-to-AI6 evidence covers MQTT/WebSocket
+connectivity and the camera/H.264 stream path; the evidence is summarized in
+[HANDOVER_READINESS.md](HANDOVER_READINESS.md). The Android documentation does
+not define backend commands. Full Android/AI6 compatibility and
+command-by-command acceptance remain `NOT_VERIFIED`. Do not invent a backend
+payload or claim full-stack acceptance from an Android-only test.

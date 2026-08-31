@@ -23,7 +23,7 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 
 - [ ] Run `:app:testDebugUnitTest` with the supported JDK 21 toolchain and
       record the actual test count and result. The accepted baseline was
-      288/288; the V4E candidate record is 294/294.
+      294/294. The earlier A1 result of 288/288 is historical evidence.
 - [ ] Run `:app:assembleDebug` and record the result.
 - [ ] Run any release-specific tests required by the candidate, or record
       `NOT_APPLICABLE` with the reason.
@@ -43,6 +43,8 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 - [ ] Confirm the candidate version code/name.
 - [ ] Confirm the signer matches the public expected SHA-256:
       `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F`.
+- [ ] For the current accepted physical artifact, record SHA-256
+      `0F386BE227ED964CA25507A15589E113259B15DDC7C9166B59B6B2640EAECEA4`.
 - [ ] Confirm `debuggable=false` for the signed Demo artifact.
 - [ ] Confirm the selected Demo BuildConfig has Media v1.1 enabled and an
       attach deadline of 10,000 ms.
@@ -64,6 +66,18 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 - [ ] A final `git status --short --untracked-files=all` and `git diff --cached`
       review covers the exact staged scope.
 
+## Current release governance
+
+- [ ] Record that GitHub `main` branch protection is currently disabled.
+- [ ] Use the public CI result for its actual coverage: JDK 21 JVM tests and
+      `assembleDebug` only.
+- [ ] Do not expect CI to hold signing material; the signed Demo gate is
+      currently manual.
+- [ ] Treat physical Temi acceptance as a separate manual gate.
+- [ ] Record that no Git tags or releases currently exist.
+- [ ] Record that an authoritative accepted signed-APK archive is not yet
+      defined.
+
 ## Physical upgrade, when required
 
 - [ ] The operator has confirmed ownership of one exact Temi serial
@@ -77,6 +91,10 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
       <SIGNED_DEMO_APK>` operation.
 - [ ] The operator does not use `-d`, `--downgrade`, `uninstall`, or `pm clear`
       as a routine upgrade step.
+- [ ] For the current accepted upgrade, the recorded relation is
+      `versionCode 5 / 1.0.4 -> versionCode 6 / 1.0.5` using one normal
+      `adb install -r`; `userId`, `dataDir`, `firstInstallTime`, and signer
+      preservation are checked.
 - [ ] Post-install package identity and version are recorded.
 - [ ] `userId`, `dataDir`, and `firstInstallTime` preservation is checked when
       the release gate requires data retention.

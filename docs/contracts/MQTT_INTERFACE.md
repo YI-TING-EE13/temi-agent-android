@@ -20,8 +20,10 @@ Labels used in this document:
 - NOT_E2E_VERIFIED: source-derived behavior that this documentation task
   does not claim to have verified against a live broker or robot.
 
-The Android-to-backend compatibility review remains
-AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+Owner-provided bounded Android-to-AI6 evidence is recorded in
+[HANDOVER_READINESS.md](../handover/HANDOVER_READINESS.md). This Android-side
+contract does not establish full Android/AI6 compatibility; that broader scope
+remains `NOT_VERIFIED` and `OWNER_DECISION_REQUIRED`.
 
 ## Endpoint and connection scope
 
@@ -179,5 +181,6 @@ the topic flags, QoS/session settings, retained ingress gates, payload and
 buffer limits, legacy isolation, duplicate handling, and endpoint ownership
 rules in the source tree.
 
-This document is source-derived. It does not claim live broker, backend, AI6,
-or robot acceptance. AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+This document is source-derived. It does not claim universal live broker,
+backend, AI6, or robot acceptance. The accepted bounded camera-stream evidence
+does not change the Android MQTT contract or promote every command path.

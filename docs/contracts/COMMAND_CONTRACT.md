@@ -17,8 +17,10 @@ unit tests.
 - NOT_E2E_VERIFIED: source/test-derived behavior not claimed as live robot or
   backend acceptance.
 
-The contract does not define AI6 implementation behavior. Backend compatibility
-remains AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+The contract does not define AI6 implementation behavior. Owner-provided
+bounded Android-to-AI6 evidence is recorded in
+[HANDOVER_READINESS.md](../handover/HANDOVER_READINESS.md); full
+Android/AI6 compatibility remains `NOT_VERIFIED`.
 
 ## Generic request schema 1.0
 
@@ -269,4 +271,6 @@ limits, result state transitions, retained ingress rejection, duplicate
 handling, callback timeout, process-death recovery, and no-replay behavior.
 
 This document is source-derived and does not claim live MQTT, backend, AI6, or
-physical robot end-to-end acceptance. AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+physical robot end-to-end acceptance. The bounded camera-stream evidence in the
+handover register does not promote this command contract or any individual
+command to full Android/AI6 acceptance.

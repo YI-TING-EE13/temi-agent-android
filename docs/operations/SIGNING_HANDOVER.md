@@ -33,6 +33,18 @@ to the authorized operator. The keystore path must be an absolute external
 `<KEYSTORE_PATH>`; never copy the keystore into the repository or document its
 real filesystem path.
 
+## Current verification and governance status
+
+`VERIFIED`: an authorized operator reproduced the signed, non-debuggable Demo
+from a fresh public checkout. The build verification task reported the expected
+public signer fingerprint, and the artifact preflight passed for package
+`com.robotemi.agent`, versionCode 6 / versionName 1.0.5, with Media v1.1 enabled.
+
+`NOT_YET_GOVERNED`: the repository does not assign signing custody to a
+successor, define a backup or disaster-recovery location, or identify an
+authoritative archive for the accepted signed APK. These decisions remain with
+the project owner and must not be inferred from the reproducible operator path.
+
 ## New maintainer setup
 
 Complete these steps only after the project custodian grants signing access:
@@ -94,3 +106,13 @@ not match, stop the release. The project owner must decide whether recovery of
 the existing custody path or a deliberate new-signing migration is possible.
 Do not invent a destructive recovery procedure, delete installed data, or
 publish a replacement key from this runbook.
+
+## Owner decision checklist
+
+The following items are intentionally open:
+
+- [ ] `PRIMARY_CUSTODIAN_ASSIGNED` — `OWNER_DECISION_REQUIRED`
+- [ ] `BACKUP_CUSTODIAN_ASSIGNED` — `OWNER_DECISION_REQUIRED`
+- [ ] `KEY_BACKUP_DEFINED` — `OWNER_DECISION_REQUIRED`
+- [ ] `RECOVERY_PROCESS_DEFINED` — `OWNER_DECISION_REQUIRED`
+- [ ] `ACCEPTED_APK_ARCHIVE_DEFINED` — `OWNER_DECISION_REQUIRED`

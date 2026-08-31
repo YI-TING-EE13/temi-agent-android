@@ -52,6 +52,22 @@ version fields, signing information exposed by the device, `userId`,
 `dataDir`, and `firstInstallTime`. Keep the record in the authorized release
 notes; do not publish private device identifiers or endpoints.
 
+## Current accepted physical provenance
+
+The current accepted physical artifact is:
+
+| Field | Accepted value |
+| --- | --- |
+| Package | `com.robotemi.agent` |
+| Version | `versionCode 6` / `versionName 1.0.5` |
+| Installed APK SHA-256 | `0F386BE227ED964CA25507A15589E113259B15DDC7C9166B59B6B2640EAECEA4` |
+| Demo signer SHA-256 | `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F` |
+| Accepted forward upgrade | `versionCode 5 / 1.0.4 -> versionCode 6 / 1.0.5` |
+| Upgrade result | One normal `adb install -r`; `userId`, `dataDir`, `firstInstallTime`, and signer were preserved. |
+
+The APK hash identifies that accepted installed artifact; it does not claim
+bit-for-bit reproducibility for independent builds.
+
 ## Before installing
 
 Before touching the package, record these values for the selected target:
@@ -137,6 +153,25 @@ adb -s <SERIAL> shell am start -n com.robotemi.agent/.MainActivity
 The app may still require its normal camera and microphone runtime permissions.
 Handle those prompts through the approved device procedure; do not publish
 device-specific permission state.
+
+## Activity foreground readiness
+
+Physical acceptance of local exercise media, camera, or WebSocket behavior
+requires `MainActivity` to be resumed and its window to be focused. Before a
+coordinate tap or Activity-owned stream diagnosis, inspect the resumed activity,
+top activity, and focused window:
+
+```text
+adb -s <SERIAL> shell dumpsys activity activities | findstr /I "mResumedActivity com.robotemi.agent"
+adb -s <SERIAL> shell dumpsys window windows | findstr /I "mCurrentFocus mFocusedApp com.robotemi.agent"
+adb -s <SERIAL> shell dumpsys input | findstr /I "FocusedWindow FocusedApplication com.robotemi.agent"
+```
+
+The exact diagnostic labels vary by Android build. Continue only when the
+results identify the resumed and focused `MainActivity`. `StandbyActivity` can
+be the current foreground owner and must be checked during operator readiness;
+do not assume that it always automatically takes foreground. V4H observed no
+autonomous takeover during its bounded monitor.
 
 ## Minimal post-launch smoke
 

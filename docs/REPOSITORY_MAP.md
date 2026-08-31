@@ -28,7 +28,7 @@ Classifications are deliberately limited to the task vocabulary: `CURRENT_SOURCE
 | `settings.gradle` | `CURRENT_CONFIG` | Root project name and `app` module inclusion. |
 | `gradle.properties` | `CURRENT_CONFIG` | Root Gradle properties. |
 | `gradlew`, `gradlew.bat` | `CURRENT_CONFIG` | Version-controlled Gradle wrapper launchers. |
-| `local.properties.example` | `CURRENT_CONFIG` | Non-secret local SDK/WebSocket configuration template. |
+| `local.properties.example` | `CURRENT_CONFIG` | Non-secret local SDK/WebSocket configuration template; the copied first-day default leaves WebSocket endpoints unset. |
 | `signing.local.properties.example` | `CURRENT_CONFIG` | Placeholder-only Demo signing input template. |
 | `.gitignore` | `CURRENT_CONFIG` | Excludes machine-local configuration, signing material, and generated outputs; project-owned exercise media remains tracked. |
 
@@ -79,8 +79,9 @@ packages and fixture groups:
 | `com.robotemi.agent.care.report` | `CURRENT_TEST` | Care Report parsing, authorization, routing, presentation, interaction, persistence, and fixtures. |
 | `app/src/test/resources/` | `CURRENT_TEST` | Resident Identity and Care Report JSON fixtures. |
 
-The accepted A1 result was `288/288` JVM tests passed. That is **VERIFIED_UNIT**
-evidence, not a physical Temi or full-stack AI6 result.
+The current accepted result is `294/294` JVM tests passed. That is
+**VERIFIED_UNIT** evidence, not a physical Temi or full-stack AI6 result. The
+earlier A1 result of `288/288` remains historical evidence only.
 
 ## Documentation and tools
 
@@ -92,6 +93,7 @@ evidence, not a physical Temi or full-stack AI6 result.
 | [`docs/architecture/`](./architecture/) | `CURRENT_DOC` | Android component ownership, lifecycle, and Temi SDK usage maps. |
 | [`docs/contracts/`](./contracts/) | `CURRENT_DOC` | Android MQTT, command, and configuration contracts. |
 | [`docs/operations/`](./operations/) | `CURRENT_DOC` | Build, install, troubleshooting, release, and signing runbooks. |
+| [`docs/handover/HANDOVER_READINESS.md`](./handover/HANDOVER_READINESS.md) | `CURRENT_DOC` | One-page current-state, ownership, prerequisite, evidence, and owner-decision register. |
 | [`docs/handover/JUNIOR_HANDOVER.md`](./handover/JUNIOR_HANDOVER.md) | `CURRENT_DOC` | Junior maintainer landing page and documentation reading order. |
 | `docs/publication-boundary.md` | `CURRENT_DOC` | Publication-set boundary and exclusions. |
 | `docs/performance/yuv-copy-optimization-2026-08-09.md` | `HISTORICAL_DOC` | Historical performance evidence; not current device acceptance. |
