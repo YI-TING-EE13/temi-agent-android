@@ -35,11 +35,11 @@ On Windows PowerShell, use `.\gradlew.bat --version` instead of
 
 ## Fresh clone
 
-Use a public repository URL and a new checkout directory. Do not place a
+Use the public repository URL and a new checkout directory. Do not place a
 private endpoint, credential, or local filesystem path in this document.
 
 ```text
-git clone <PUBLIC_REPOSITORY_URL>
+git clone https://github.com/YI-TING-EE13/temi-agent-android.git
 cd temi-agent-android
 ```
 
@@ -73,10 +73,12 @@ Set the minimum required value in `local.properties`:
 sdk.dir=<ANDROID_SDK_PATH>
 ```
 
-Normal public compilation does not require a private WebSocket endpoint. Keep
-optional WebSocket, resident identity, care, and legacy-action settings at
-their safe defaults unless the deployment owner has supplied the corresponding
-contract and configuration.
+Normal public compilation does not require a private WebSocket endpoint. The
+tracked template leaves `ws.server.urls` unset, so a copy that changes only
+`sdk.dir` generates `WS_SERVER_URLS` as an empty string. Keep optional
+WebSocket, resident identity, care, and legacy-action settings at their safe
+defaults unless the deployment owner has supplied the corresponding contract
+and configuration.
 
 ## Debug build
 
@@ -121,8 +123,9 @@ Linux or macOS:
 ./gradlew :app:testDebugUnitTest --no-daemon --console=plain --max-workers=1
 ```
 
-The accepted baseline recorded 288/288 JVM tests passing. The number of tests
-may change as the source changes; record the actual result from the current
+The current accepted baseline records `294/294` JVM tests passing. The earlier
+A1 result of `288/288` is historical evidence only. The number of tests may
+change as the source changes; record the actual result from the current
 checkout. These tests are not a substitute for physical Temi or end-to-end
 backend acceptance.
 

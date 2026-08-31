@@ -70,17 +70,21 @@ are intentionally ignored and must not be committed with populated values:
 local.properties.example is a tracked template. It contains:
 
 ~~~properties
-sdk.dir=<ANDROID_SDK_PATH>
-ws.server.urls=ws://<BACKEND_HOST>:8080
+# sdk.dir=<ANDROID_SDK_PATH>
+# Optional deployment-specific WebSocket video endpoints.
+# Leave unset for normal public development builds.
+# ws.server.urls=ws://<BACKEND_HOST>:8080
 resident.identity.enabled=false
 care.report.enabled=false
 legacy.mqtt.actions.enabled=false
 ~~~
 
-The values above are placeholders. sdk.dir is consumed by Gradle and points
-to the machine's Android SDK. ws.server.urls is a comma-separated build input
-for the camera WebSocket clients. The identity, care, and legacy flags are
-false by default.
+The values above are placeholders or disabled defaults. `sdk.dir` is consumed
+by Gradle and points to the machine's Android SDK. An omitted `ws.server.urls`
+leaves `WS_SERVER_URLS` empty, so the first-day copied template creates no
+WebSocket client. A deployment may uncomment the property and supply a
+comma-separated endpoint list. The identity, care, and legacy flags are false
+by default.
 
 The template does not contain MQTT host, port, robot ID, broker username, or
 broker password. Those values belong to the private device runtime settings
@@ -165,8 +169,10 @@ The Android app depends on external service values that are deployment-owned:
 | Temi platform | Installed robot and com.robotemi:sdk:1.134.1 | Robot callbacks and motion/TTS operations depend on the installed Temi SDK and device. |
 
 The source-derived Android contract does not define Hermes, Bridge, LM Studio,
-AI6, MQTT broker ACLs, backend routing, backend storage, or backend
-compatibility. AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+AI6, MQTT broker ACLs, backend routing, backend storage, or the full
+Android/AI6 contract. Owner-provided bounded Android-to-AI6 evidence is
+recorded in [HANDOVER_READINESS.md](../handover/HANDOVER_READINESS.md);
+`FULL_ANDROID_AI6_COMPATIBILITY = NOT_VERIFIED`.
 
 ## Rebuild versus runtime change
 
@@ -186,5 +192,5 @@ compatibility. AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
 The build and configuration behavior is corroborated by the source and by
 the MQTT topic, endpoint, media, and service tests. This document does not
 claim that a private machine-local configuration is present, valid, or
-accepted by a live broker, backend, Temi device, or AI6 implementation.
-AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+accepted by a live broker, backend, Temi device, or the full AI6 implementation.
+The bounded Android-to-AI6 evidence is recorded in the handover register.

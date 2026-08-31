@@ -88,5 +88,7 @@ is included in this map.
 The Android source and unit tests cover listener registration, callback
 terminalization, service-owned TTS correlation, command dispatch, cancellation,
 and lifecycle cleanup. The map does not claim Temi hardware, voice, ASR,
-navigation, turn, TTS, or physical stop end-to-end acceptance.
-AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+navigation, turn, TTS, or physical stop end-to-end acceptance. Bounded
+Android-to-AI6 camera-stream evidence is recorded in
+[HANDOVER_READINESS.md](../handover/HANDOVER_READINESS.md); full
+Android/AI6 compatibility remains `NOT_VERIFIED`.

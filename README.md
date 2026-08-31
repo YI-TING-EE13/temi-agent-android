@@ -34,7 +34,9 @@ interfaces.
     External backend services
 
 The external services are interface dependencies only. Final Android/AI6
-compatibility remains pending the separate AI6 contract review; the services
+compatibility is not established by this repository. Owner-provided bounded
+Android-to-AI6 evidence is recorded in the handover register; a broader
+command-by-command acceptance scope remains an owner decision. The services
 are deployed and configured separately from this Android project.
 
 ## Requirements
@@ -52,12 +54,19 @@ build failed, so JDK 25 is outside the verified compatibility baseline.
 
 ## Configuration
 
-Run commands from this directory, the Android project root.
+After cloning, run commands from the cloned Android project root. A first-day
+public checkout is:
+
+    git clone https://github.com/YI-TING-EE13/temi-agent-android.git
+    cd temi-agent-android
+
+Then create the ignored local configuration:
 
 1. Copy local.properties.example to local.properties.
 2. Set sdk.dir to the Android SDK directory on the current machine.
-3. Set ws.server.urls only when an authorized deployment provides WebSocket
-   endpoints. A normal public build does not require private WebSocket values.
+3. Leave ws.server.urls unset for a normal public build. Set it only when an
+   authorized deployment provides WebSocket endpoints; the template contains no
+   active endpoint.
 4. Leave resident.identity.enabled and care.report.enabled disabled unless the
    corresponding external contracts are available.
 5. Leave legacy.mqtt.actions.enabled=false unless a controlled LAB deployment
@@ -209,6 +218,8 @@ repository and are not published here.
   publication gate.
 - [Signing handover](docs/operations/SIGNING_HANDOVER.md): private signing
   custody and public verification identity.
+- [Handover readiness](docs/handover/HANDOVER_READINESS.md): current-state
+  register, ownership boundaries, prerequisites, and open decisions.
 - [Junior handover](docs/handover/JUNIOR_HANDOVER.md): maintainer landing page
   and reading order.
 - [Publication boundary](docs/publication-boundary.md): public-set
@@ -238,8 +249,10 @@ repository and are not published here.
 - Resident Identity and Care Report source paths are opt-in; both are disabled
   in the accepted Demo baseline and lack current external/device E2E
   acceptance.
-- Final Android/AI6 compatibility remains pending the AI6 freeze and separate
-  contract review.
+- Owner-provided bounded Android-to-AI6 evidence covers the documented
+  connectivity and camera-stream path. Full Android/AI6 compatibility and
+  command-by-command acceptance remain `NOT_VERIFIED`; the broader scope is an
+  owner decision.
 - The target SDK remains 30 and Java/Kotlin source compatibility remains Java 8;
   this cleanup does not modernize the toolchain.
 

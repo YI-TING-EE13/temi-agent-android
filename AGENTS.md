@@ -10,7 +10,8 @@ part of the Gradle build.
 - Android module: app/.
 - Application ID: com.robotemi.agent.
 - Repository release candidate: 1.0.5, versionCode 6.
-- Current physical Temi baseline before V4F: 1.0.4, versionCode 5.
+- Current accepted physical Temi baseline: 1.0.5, versionCode 6.
+- Historical physical Temi baseline before V4F: 1.0.4, versionCode 5.
 - Main entry point: app/src/main/java/com/robotemi/agent/MainActivity.java.
 - Temi SDK dependency: com.robotemi:sdk:1.134.1.
 
@@ -51,7 +52,9 @@ or current-status documentation.
 ## Local configuration
 
 Copy local.properties.example to the project root as local.properties and set
-the local Android SDK path and deployment-specific WebSocket endpoints.
+the local Android SDK path. Leave the optional WebSocket endpoint unset for a
+normal public build; configure it only when an authorized deployment supplies
+the endpoint.
 Configure MQTT host, port, robot ID, and broker values through the app's
 private runtime settings. Do not add machine paths, credentials, or private
 endpoints to tracked files.

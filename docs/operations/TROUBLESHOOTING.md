@@ -30,6 +30,25 @@ Run the failing task again only after correcting the matching cause. Keep the
 original failure output private if it contains local paths or environment
 details.
 
+## Activity-owned runtime appears inactive
+
+Exercise media, camera capture, and WebSocket streaming are Activity-owned
+paths. Physical diagnosis requires `MainActivity` to be resumed and its window
+focused. Before classifying a source or transport defect, inspect the resumed
+activity, top activity, and focused window with an exact serial:
+
+```text
+adb -s <SERIAL> shell dumpsys activity activities | findstr /I "mResumedActivity com.robotemi.agent"
+adb -s <SERIAL> shell dumpsys window windows | findstr /I "mCurrentFocus mFocusedApp com.robotemi.agent"
+adb -s <SERIAL> shell dumpsys input | findstr /I "FocusedWindow FocusedApplication com.robotemi.agent"
+```
+
+Continue only when the output identifies the resumed/focused `MainActivity`.
+`StandbyActivity` can be the current foreground owner and should be checked as
+part of operator readiness. V4H did not observe an autonomous takeover during
+its bounded monitor; do not claim that `StandbyActivity` always automatically
+takes foreground.
+
 ## Temi top controls do not respond
 
 V4D identified a Temi-owned `SYSTEM_ALERT_WINDOW` from
@@ -172,10 +191,12 @@ Treat MQTT as an Android-to-external-service boundary. Follow this order:
    `adb -s <SERIAL> shell pidof com.robotemi.agent` and inspect the app status.
    `MqttLifecycleService` is a foreground, sticky service owned by the Android
    app; `MainActivity` observes it and does not own the broker lifecycle.
-2. **Endpoint configured?** Inspect the app’s MQTT settings and confirm one
+2. **Endpoint configured?** Open the app's `MQTT settings` panel and confirm one
    valid device-local endpoint: `<MQTT_HOST>`, `<MQTT_PORT>`, and
-   `<ROBOT_ID>`. Do not paste the values into public logs. Invalid or disabled
-   configuration should remain disconnected rather than fail open.
+   `<ROBOT_ID>`. Tap `Apply` after editing. Do not paste the values into public
+   logs. Invalid or disabled configuration should remain disconnected rather
+   than fail open. A runtime endpoint change normally does not require an APK
+   rebuild.
 3. **Connection attempt?** Distinguish `CONNECTING` or `RECONNECTING` from
    `DISCONNECTED`, `DEGRADED`, and `CONNECTED` in the app’s status and bounded
    diagnostics. The Android reconnect policy starts at one second and caps at
@@ -189,7 +210,8 @@ Treat MQTT as an Android-to-external-service boundary. Follow this order:
    errors. Do not infer a broker failure from a local Activity status alone.
 6. **Android runtime or external dependency?** Check whether the service is
    alive and whether the endpoint/topic configuration is valid before asking
-   the external broker, backend, Hermes, Bridge, or AI6 owner to investigate.
+   the MQTT or AI6 runtime owner to investigate. Escalate an Android settings,
+   UI, or Activity-readiness issue to the Android/LAB606 maintainer.
 
 The Android client uses one active endpoint, QoS 1, non-retained
 publications, and bounded reconnect. Pending result outboxes remain local and

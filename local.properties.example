@@ -4,9 +4,10 @@
 # Android SDK location for this machine. Use forward slashes on Windows.
 # sdk.dir=<ANDROID_SDK_PATH>
 
-# Optional WebSocket video endpoints. The app accepts a comma-separated list.
-# Replace the placeholder with an endpoint provided by your deployment.
-ws.server.urls=ws://<BACKEND_HOST>:8080
+# Optional deployment-specific WebSocket video endpoints.
+# Leave unset for normal public development builds.
+# The app accepts a comma-separated list when configured.
+# ws.server.urls=ws://<BACKEND_HOST>:8080
 
 # Keep these disabled unless the corresponding external service and contract
 # are available in the deployment environment.

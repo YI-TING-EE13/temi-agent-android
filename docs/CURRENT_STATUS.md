@@ -1,20 +1,22 @@
 # Current Status
 
-Status date: **2026-08-31**
+Status date: **2026-09-01**
 
 This document is the current-truth record for the accepted Android publication
 baseline. It separates current source facts from verified evidence,
 not-verified behavior, historical notes, and external dependencies. The
 feature-level evidence matrix is in [VERIFIED_FEATURES.md](./VERIFIED_FEATURES.md),
 and the source-oriented tree is in [REPOSITORY_MAP.md](./REPOSITORY_MAP.md).
+The successor landing register is [HANDOVER_READINESS.md](./handover/HANDOVER_READINESS.md).
 
 ## Canonical repository
 
 | Field | Accepted value |
 | --- | --- |
 | Repository | `YI-TING-EE13/temi-agent-android` |
+| Public clone URL | `https://github.com/YI-TING-EE13/temi-agent-android.git` |
 | Canonical branch | `main` |
-| Required starting canonical `main` for V4I | `63704249a468021807e922118991f28c13d6e9bf` |
+| Required canonical `main` baseline for G3B | `b22cce606074e1843bcd4770517482336522942e` |
 | Historical V4E candidate starting `main` | `e08d7f46835d2dcffd76a77bf3e1fb423dc9c0ce` |
 | Previously accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
 | Current documentation HEAD | See the repository's current `main` branch |
@@ -42,7 +44,7 @@ baseline.
 
 ## Verified build baseline
 
-The current source and A1 acceptance record establish this build baseline:
+The current source and G3A acceptance record establish this build baseline:
 
 | Item | Baseline |
 | --- | --- |
@@ -55,9 +57,10 @@ The current source and A1 acceptance record establish this build baseline:
 | `targetSdk` | 30 |
 | Temi SDK | `com.robotemi:sdk:1.134.1` |
 
-A1 evidence is **VERIFIED** at build level:
+A1 and later V4E/G3A evidence is **VERIFIED** at build level:
 
-- `288/288` JVM tests passed.
+- `294/294` JVM tests passed on the current accepted source.
+- The earlier A1 result of `288/288` is retained as historical evidence.
 - `assembleDebug` passed.
 - The signed `assembleDemo` build passed.
 - Demo artifact preflight passed.
@@ -66,9 +69,10 @@ A1 evidence is **VERIFIED** at build level:
 The public CI workflow covers JDK 21, JVM tests, and `assembleDebug`. It does
 not provide Demo signing, Temi device, private backend, or full AI6 evidence.
 
-## Previously accepted Demo artifact contract
+## Historical Demo artifact contract
 
-The previously accepted Demo variant had this packaged contract:
+The earlier A1 accepted Demo variant had this packaged contract. It is
+historical and does not describe the current installed physical version:
 
 | Field | Value |
 | --- | --- |
@@ -80,9 +84,10 @@ The previously accepted Demo variant had this packaged contract:
 | Media attach deadline | `10000 ms` |
 | Expected Demo signer SHA-256 | `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F` |
 
-## V4E repository release candidate
+## Current accepted Android baseline
 
-The V4E repository candidate has this packaged contract:
+The current accepted Android baseline was introduced by V4E and physically
+accepted by V4F/V4H. Its packaged contract is:
 
 | Field | Value |
 | --- | --- |
@@ -93,7 +98,9 @@ The V4E repository candidate has this packaged contract:
 | Media v1.1 enabled | `true` in Demo |
 | Media attach deadline | `10000 ms` in Demo |
 | Temi top-safe-area policy | `max(0.09 * windowHeight, 72dp)`, then max with system/cutout insets |
-| Physical playback status | `VERIFIED_DEVICE` via V4H on installed versionCode 6 / versionName 1.0.5 |
+| Installed APK SHA-256 | `0F386BE227ED964CA25507A15589E113259B15DDC7C9166B59B6B2640EAECEA4` |
+| Expected Demo signer SHA-256 | `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F` |
+| Physical exercise playback | `VERIFIED_DEVICE` via V4H on installed versionCode 6 / versionName 1.0.5 |
 
 The two exercise resources are `TRACKED_PROJECT_ASSET` files. The command
 allowlist remains limited to `elderly_hand_exercise` and
@@ -111,10 +118,10 @@ At the V4E stage, this was source/build evidence only. V4F physically
 confirmed the safe placement of the exercise controls, and V4H later
 completed the physical hand and leg coordinate-tap playback acceptance.
 
-## V4E verification record
+## Historical V4E verification record
 
 The V4E candidate was verified with the supported JDK 21 and Gradle 8.13
-wrapper:
+wrapper before physical acceptance:
 
 - `:app:testDebugUnitTest`: `294/294` passed, including six new top-policy
   tests.
@@ -138,6 +145,17 @@ resumed and its window focused. After one MainActivity launch, a bounded
 foreground monitor produced `47` samples across at least `27584 ms`;
 `MainActivity` remained foreground and no autonomous `StandbyActivity`
 takeover was observed.
+
+The accepted physical provenance is:
+
+| Field | Accepted value |
+| --- | --- |
+| Package | `com.robotemi.agent` |
+| Version | `versionCode 6` / `versionName 1.0.5` |
+| Installed APK SHA-256 | `0F386BE227ED964CA25507A15589E113259B15DDC7C9166B59B6B2640EAECEA4` |
+| Demo signer SHA-256 | `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F` |
+| Accepted forward upgrade | `versionCode 5 / 1.0.4 -> versionCode 6 / 1.0.5` |
+| Upgrade operation | One normal `adb install -r`; `userId`, `dataDir`, `firstInstallTime`, and signer were preserved. |
 
 With that foreground precondition satisfied, the following physical checks
 passed:
@@ -173,12 +191,12 @@ external AI6, broker, or full-stack `play_media` path to `VERIFIED_E2E`.
 
 ## V4E physical baseline (historical)
 
-At the start of V4E, the task-provided physical Temi baseline is
+At the start of V4E, the task-provided physical Temi baseline was
 `com.robotemi.agent`, versionCode 5 / versionName 1.0.4. V4E performs no APK
 installation, uninstall, data clear, reboot, runtime media test, MQTT change,
-or AI6 restart. At that stage, the candidate remained pending V4F physical
-acceptance. This is the pre-acceptance record; it is superseded by the V4H
-result above without rewriting the historical observation.
+or AI6 restart. At that stage, physical acceptance had not yet run. This is the
+pre-acceptance record; it is superseded by the V4H result above without
+rewriting the historical observation.
 
 ## Previously accepted physical Temi evidence
 
@@ -212,11 +230,32 @@ The Android-side evidence records the following **VERIFIED** facts:
 - No MQTT service crash loop was observed.
 
 The broker, AI6 backend, and their lifecycle are **EXTERNAL_DEPENDENCY**. The
-final Android/AI6 contract is **PENDING_AI6_FINAL_CONTRACT**. The following
-claims remain **NOT_VERIFIED** by this baseline: final full-stack AI6
-acceptance, a final canonical `noop` round trip, care end-to-end behavior,
-resident-identity end-to-end behavior, and physical completion of all command
-actions.
+following claims remain **NOT_VERIFIED** by this baseline: full Android/AI6
+compatibility, final full-stack AI6 acceptance, a final canonical `noop` round
+trip, care end-to-end behavior, resident-identity end-to-end behavior, and
+physical completion of all command actions.
+
+## Bounded Android-to-AI6 evidence
+
+The following owner-provided evidence is recorded at bounded integration
+granularity. It is not a claim that every Android command or robot action is
+end-to-end accepted:
+
+- AI6 canonical root: `/home/yiting/TemiAgent` (external owner path).
+- AI6 branch: `main`.
+- AI6 accepted HEAD: `12aff3bfdfe526c17a25a2681aea2afad7112b33`.
+- `scripts/demo start`: `PASS`.
+- `scripts/demo status`: `DEMO_READY`.
+- `scripts/demo doctor`: `PASS`.
+- Accepted bounded path: Android MQTT connectivity, WebSocket client
+  creation/connection, Temi-to-AI6 WebSocket connectivity, camera frame input,
+  H.264 output, WebSocket binary send, AI6 H.264 ingress, non-empty
+  `VisionBuffer`, and viewer frames.
+
+`FULL_ANDROID_AI6_COMPATIBILITY = NOT_VERIFIED`. Complete command-by-command
+acceptance, physical completion of every robot action, Resident Identity E2E,
+Care Report E2E, disabled-feature compatibility, and universal deployment
+compatibility remain outside the accepted bounded evidence.
 
 ## Build-time feature state
 
@@ -236,14 +275,18 @@ media deployment is available. Resident Identity and Care Report are therefore
 disabled in the accepted Demo baseline even though their source and JVM tests
 are present.
 
-## Known handover gaps
+## Known handover gaps and owner decisions
 
-Only the following are current gaps for handover:
+The following items remain open decisions for the project owner:
 
-- Final Android/AI6 contract compatibility review is pending the AI6 freeze.
-- Release and tag policy is not yet finalized.
-- Signing private-key custody remains an out-of-band operator responsibility.
-- The applicable license decision has not yet been selected.
+- Full Android/AI6 acceptance scope is not defined beyond the bounded evidence.
+- No Git tags or releases exist; release/tag policy is not finalized.
+- No `LICENSE` file exists; the repository license decision is open.
+- GitHub `main` branch protection is currently disabled.
+- Signing successor custody, backup/recovery, and accepted APK archive ownership
+  remain out of band.
+- Resident Identity, Care Report, and legacy global MQTT actions remain disabled
+  unless the owner approves a compatible build and acceptance scope.
 
 The old performance note under `docs/performance/` is **HISTORICAL** engineering
 evidence and is not a current device-acceptance record. Resolved publication,

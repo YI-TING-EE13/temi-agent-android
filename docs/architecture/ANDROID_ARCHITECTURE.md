@@ -59,7 +59,7 @@ backend implementation.
 
 | Component | Responsibility | Lifecycle | Inputs | Outputs | Failure boundary |
 | --- | --- | --- | --- | --- | --- |
-| MainActivity | Owns screen state, Temi listener registration, custom voice flow, camera, WebSocket clients, identity/care UI, and non-service canonical actions | Created and started by the launcher; listeners and camera/WebSockets attach in onStart and stop in onStop | User/UI events, Temi callbacks, MQTT messages forwarded by the service, build flags | UI updates, Temi SDK calls, camera frames, command results, ASR events | Activity recreation must not own or tear down the MQTT service; detached observer delivery is bounded. |
+| MainActivity | Owns screen state, Temi listener registration, custom voice flow, camera, WebSocket clients, identity/care UI, and non-service canonical actions | `onCreate` constructs the UI, controller, WebSocket clients, and camera manager; `onStart` registers Temi listeners; `onRobotReady` plus permission approval invokes `startAllServices`; Activity-owned listeners, camera, and WebSocket connections stop in `onStop`, and WebSocket clients are shut down in `onDestroy` | User/UI events, Temi callbacks, MQTT messages forwarded by the service, build flags | UI updates, Temi SDK calls, camera frames, command results, ASR events | Activity recreation must not own or tear down the MQTT service; detached observer delivery is bounded. |
 | MqttLifecycleService | Owns one long-lived MQTT broker connection, topic set, ingress size/retained/feature gates, detached message buffer, service TTS path, and result publication | Foreground sticky service; exported=false and stopWithTask=false; starts/binds from MainActivity | Runtime endpoint, MQTT callbacks, canonical/media payloads, TTS callbacks | Topic subscriptions, command/media result publications, observer callbacks, durable outbox state | Broker failure leaves pending results; service shutdown removes listeners and closes the broker. |
 | MqttTopicSet and ingress policies | Construct per-robot topics and classify side-effecting/feature-gated ingress | Stateless or endpoint-scoped | Robot ID, build flags, topic and retained flag | Topic list and reject reasons | Invalid endpoint or disabled feature fails closed. |
 | CanonicalCommandValidator and ingress | Validate generic schema 1.0, action allowlists, correlation, and robot match before dispatch | Stateless per request | JSON payload and expected robot ID | Canonical command or validation reason | Invalid input does not reach a device-side command executor. |
@@ -67,11 +67,33 @@ backend implementation.
 | CanonicalCommandRuntime | Own one pending TTS correlation, callback timeout, terminalization order, and observer-safe completion | Process-owned; survives Activity observer changes but not process restart | Valid speak request, TTS callbacks, dispatch errors, timeout clock | TTS port calls and terminal command result | Missing callback fails with tts_callback_timeout; stale callbacks are ignored. |
 | MediaV11ServiceRuntime and coordinator | Parse, serialize, bind, control, reconcile, and durably publish media v1.1 results | Process-owned runtime with transient Activity playback binding | Media v1.1 command, playback callbacks, attach/dispatch deadlines | Player operations, accepted/started/terminal media results, outbox state | Binding timeout, invalid session, missing resource, publish failure, or process restart produces a terminal error/reconciliation result without physical replay. |
 | AgentStateMachine | Coordinates IDLE, WAKEUP_TRIGGERED, ASR_LISTENING, THINKING, WAITING, and EXECUTING | Owned by MainActivity while the Activity is alive | Wakeup, ASR, command, timeout, touch interruption | State transitions and state listener callbacks | Invalid or interrupted transitions return the local flow to IDLE and cancel active local work. |
-| Temi callback adapters | Receive robot-ready, ASR, wakeup, NLP, and TTS callbacks | Registered in onStart and removed in onStop | Temi SDK callbacks | MainActivity state changes, ASR publication, TTS result terminalization | Unsolicited wake/ASR callbacks are suppressed by the custom acceptance gate. |
+| Temi callback adapters | Receive robot-ready, ASR, wakeup, NLP, and TTS callbacks | Registered in `onStart` and removed in `onStop`; `onRobotReady` may trigger `startAllServices` after permission checks | Temi SDK callbacks | MainActivity state changes, ASR publication, TTS result terminalization | Unsolicited wake/ASR callbacks are suppressed by the custom acceptance gate. |
 | CameraManager and H264Encoder | Capture CameraX YUV_420_888 frames, encode AVC/H.264, and deliver binary access units | Created with Activity services; stopped on Activity stop | Camera permission, camera frames, encoder state | Timestamp-prefixed H.264 packets | Frame closure, encoder exception, or disconnect drops/restarts local stream work; it does not create MQTT commands. |
-| WebSocketClient | Maintain each configured camera stream connection and send binary packets | Connects during service start; disconnects on Activity stop; shutdown on destroy | BuildConfig URL and H.264 packets | Binary WebSocket frames and connection state | Disconnected sends return false/drop; reconnect uses bounded jittered delay. |
+| WebSocketClient | Maintain each configured camera stream connection and send binary packets | Objects are constructed in `onCreate`; connections begin in Activity `startAllServices` after Temi readiness and permission approval; clients disconnect in `onStop` and shut down in `onDestroy` | BuildConfig URL and H.264 packets | Binary WebSocket frames and connection state | Disconnected sends return false/drop; reconnect uses bounded jittered delay. |
 | ResidentIdentityStateHolder | Maintain current process-local authorized identity with ordering and TTL rules | Created for identity or care feature; not persisted across process death | Strict identity result payload and retained flag | Current identity for UI and care authorization | Invalid, stale, conflicting, or expired identity clears identity-dependent UI. |
 | CareReportStateHolder and interaction coordinator | Validate resident-scoped care reports and publish metadata-only interactions | Created only when care reporting is enabled; process-local report receipt plus durable interaction outbox | Identity state, care report payloads, viewed/acknowledged UI actions | Report UI state and interaction result publications | Retained, wrong-resident, duplicate/conflicting, invalid, or capacity-exhausted inputs are rejected or clear state. |
+
+### MainActivity lifecycle timing
+
+`MainActivity.onCreate` inflates the layout, creates the local media controller,
+loads device-local MQTT settings, starts and binds `MqttLifecycleService`,
+constructs configured WebSocket clients, and creates the camera manager. It does
+not start the Activity-owned camera or WebSocket connections at that point.
+
+`MainActivity.onStart` registers Temi listeners and calls `Robot.onStart` with
+the Activity metadata. `onResume` and a focused-window callback restore the
+fullscreen surfaces. When the Temi readiness callback reports ready and the
+camera/microphone permissions are available, `startAllServices` starts the
+Activity-owned voice, WebSocket, and camera paths and asks the service-owned
+broker to connect. `onStop` removes Temi listeners, stops the voice path,
+disconnects WebSocket clients, and shuts down the camera. `onDestroy` shuts down
+the WebSocket clients and unbinds the MQTT service; it does not own the
+long-lived MQTT service shutdown.
+
+Physical acceptance of Activity-owned UI, media, camera, or WebSocket behavior
+requires `MainActivity` to be resumed and its window focused. `StandbyActivity`
+can be the foreground owner, so operators must check the resumed activity, top
+activity, and focused window before diagnosis or coordinate acceptance.
 
 ## Command and result flow
 
@@ -192,5 +214,7 @@ service behavior or compatibility.
 The component and lifecycle tests corroborate service ownership, bounded
 buffering, validation before execution, durable result ordering, media binding
 and restart behavior, state transitions, and the camera/WebSocket lifecycle.
-No statement in this document is live device, broker, backend, or AI6
-end-to-end acceptance. AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
+Owner-provided bounded Android-to-AI6 evidence covers the camera-stream path and
+is recorded in [HANDOVER_READINESS.md](../handover/HANDOVER_READINESS.md). No
+statement in this document establishes full Android/AI6 compatibility;
+`FULL_ANDROID_AI6_COMPATIBILITY = NOT_VERIFIED`.
