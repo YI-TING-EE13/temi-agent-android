@@ -6,7 +6,7 @@ documentation-inclusive GitHub `main` recorded in
 baseline is recorded separately in that current-status document.
 Classifications are deliberately limited to the task vocabulary: `CURRENT_SOURCE`,
 `CURRENT_TEST`, `CURRENT_CONFIG`, `CURRENT_TOOL`, `CURRENT_DOC`,
-`HISTORICAL_DOC`, `GENERATED_NOT_TRACKED`, `PRIVATE_NOT_TRACKED`, and
+`HISTORICAL_DOC`, `TRACKED_PROJECT_ASSET`, `GENERATED_NOT_TRACKED`, `PRIVATE_NOT_TRACKED`, and
 `EXTERNAL_DEPENDENCY`.
 
 ## Repository boundary
@@ -30,7 +30,7 @@ Classifications are deliberately limited to the task vocabulary: `CURRENT_SOURCE
 | `gradlew`, `gradlew.bat` | `CURRENT_CONFIG` | Version-controlled Gradle wrapper launchers. |
 | `local.properties.example` | `CURRENT_CONFIG` | Non-secret local SDK/WebSocket configuration template. |
 | `signing.local.properties.example` | `CURRENT_CONFIG` | Placeholder-only Demo signing input template. |
-| `.gitignore` | `CURRENT_CONFIG` | Excludes machine-local configuration, signing material, media, and generated outputs. |
+| `.gitignore` | `CURRENT_CONFIG` | Excludes machine-local configuration, signing material, and generated outputs; project-owned exercise media remains tracked. |
 
 The current tree contains no source directory for an AI6 backend, Hermes Agent,
 Bridge, LM Studio, or an MQTT broker implementation. Those systems are
@@ -55,7 +55,7 @@ The following package tree is derived from the current files under
 | `media/v11/` | `CURRENT_SOURCE` | Strict Media v1.1 parser, coordinator, service runtime, playback binding/controller, persistence, migration, result model, state machine, and optional resource resolver. |
 | `identity/` | `CURRENT_SOURCE` | Resident Identity parsing, state, TTL/lifecycle, gating, and UI mapping. |
 | `care/report/` | `CURRENT_SOURCE` | Care Report parsing, state, routing, presentation, interaction persistence, and UI binding. |
-| `app/src/main/res/` | `CURRENT_SOURCE` | Current packaged layout, values, drawable, and backup/data-extraction XML resources. |
+| `app/src/main/res/` | `CURRENT_SOURCE` | Current packaged layout, values, drawable, backup/data-extraction XML, and tracked exercise video resources. |
 
 The source tree contains the canonical action allowlist (`speak`,
 `ask_clarification`, `turn`, `navigate`, `stop`, `noop`, and `play_media`) and
@@ -105,7 +105,7 @@ evidence, not a physical Temi or full-stack AI6 result.
 | --- | --- | --- |
 | Populated `local.properties` and `signing.local.properties` | `PRIVATE_NOT_TRACKED` | Machine-local settings and private Demo signing inputs; never publish. |
 | Keystores, certificates, passwords, aliases, SDK paths, and private endpoints | `PRIVATE_NOT_TRACKED` | Operator-controlled material outside the public source boundary. |
-| Optional exercise video assets | `PRIVATE_NOT_TRACKED` | Deployment-provided media is absent from the public tree and ignored by Git. |
+| Project-owned exercise video assets | `TRACKED_PROJECT_ASSET` | `elderly_hand_exercise.mp4` and `elderly_leg_exercise.mp4` are tracked public resources and must be present in a fresh clone. |
 | Gradle/Android build outputs, APK/AAB files, logs, reports, captures, and recordings | `GENERATED_NOT_TRACKED` | Generated or local evidence artifacts; not source provenance. |
 
 ## External dependencies
@@ -124,7 +124,9 @@ evidence, not a physical Temi or full-stack AI6 result.
 
 `CURRENT_SOURCE` and `CURRENT_TEST` describe what is present now. `CURRENT_DOC`
 and `CURRENT_CONFIG` describe the published/current support files.
-`HISTORICAL_DOC` is context only. `GENERATED_NOT_TRACKED` and
+`HISTORICAL_DOC` is context only. `TRACKED_PROJECT_ASSET` identifies an
+authorized project-owned file included in the public repository. Its presence
+does not imply `VERIFIED_DEVICE` playback. `GENERATED_NOT_TRACKED` and
 `PRIVATE_NOT_TRACKED` are deliberately outside publication. `EXTERNAL_DEPENDENCY`
 means acceptance requires a separately controlled system. Presence in any map
 row must not be read as **VERIFIED_DEVICE** or **VERIFIED_E2E** behavior.

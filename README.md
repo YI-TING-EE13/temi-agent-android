@@ -21,7 +21,7 @@ interfaces.
   durable result delivery.
 - Source-supported Resident Identity and Care Report paths; both are disabled
   in the accepted Demo baseline.
-- Callback-grounded playback of optional deployment-provided exercise media.
+- Callback-grounded playback of the two tracked project-owned exercise videos.
 - CameraX YUV capture, H.264 encoding, and WebSocket video delivery.
 - Safe handling for invalid, duplicate, cancelled, or interrupted commands.
 
@@ -93,17 +93,19 @@ for signing custody.
 The populated signing file, passwords, aliases, and keystore are local-only.
 Never commit them or print them in logs or documentation.
 
-## Optional Exercise Media
+## Project-owned Exercise Media
 
-Exercise videos used by a deployment environment are not included in this
-public repository. To enable the corresponding local media features, provide:
+The project-produced exercise videos are part of this public repository as
+tracked Android raw resources:
 
     app/src/main/res/raw/elderly_hand_exercise.mp4
     app/src/main/res/raw/elderly_leg_exercise.mp4
 
-These files are intentionally excluded from Git. The application remains
-buildable and startable when they are absent. A local media request reports
-that the deployment does not provide the requested video instead of crashing.
+Fresh clones contain both files, and the fixed media IDs remain
+`elderly_hand_exercise` and `elderly_leg_exercise`. The resolver retains
+defensive missing-resource handling: if a generated APK lacks a resource, the
+request reports `media_unavailable:<media_id>` instead of crashing. Physical
+Temi playback is not verified by V4A; device acceptance is deferred to V4B.
 
 ### Demo build
 
@@ -131,7 +133,8 @@ Optional local checks:
 
 The public GitHub Actions workflow runs the unit-test and debug-build tasks on
 Ubuntu with JDK 21. The workflow does not require signing material, a Temi
-robot, private services, or exercise media.
+robot, or private services; the tracked exercise resources are included by the
+normal checkout and debug build.
 
 The debug APK is written to:
 
@@ -218,11 +221,10 @@ repository and are not published here.
   runtime behavior; a desktop build is not device acceptance.
 - Android SpeechRecognizer is a pragmatic wake-word implementation and is less
   reliable for very short phrases than a dedicated keyword spotter.
-- Media playback accepts only the allowlisted exercise identifiers when the
-  optional local files are supplied; arbitrary URLs, filesystem paths, and
-  content URIs are rejected.
-- Exercise videos are private deployment assets and are intentionally absent
-  from this public repository.
+- Media playback accepts only the allowlisted exercise identifiers; arbitrary
+  URLs, filesystem paths, and content URIs are rejected.
+- The two project-owned exercise videos are packaged in the V4A 1.0.4/code5
+  release candidate. Physical playback is not `VERIFIED_DEVICE` until V4B.
 - Robot navigation arrival and physical turn completion are not observed by the
   Android result contract.
 - Camera streaming depends on a configured external WebSocket service.

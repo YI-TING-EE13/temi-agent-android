@@ -22,10 +22,6 @@ signing.local.properties
 *.pem
 *.key
 
-# Optional private deployment media
-app/src/main/res/raw/elderly_hand_exercise.mp4
-app/src/main/res/raw/elderly_leg_exercise.mp4
-
 # Android Studio
 .idea/
 **/.idea/

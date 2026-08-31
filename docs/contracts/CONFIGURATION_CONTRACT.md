@@ -51,9 +51,10 @@ certificate, and expected signer digest before a demo build can proceed. This
 document intentionally does not reproduce the expected digest or any signing
 input.
 
-Optional exercise media is not a tracked build configuration value. The
-allowlisted media IDs are fixed in source; the corresponding raw resources
-are classified under PRIVATE_DEPLOYMENT_ASSET.
+Project-owned exercise media is not a tracked build configuration value. The
+allowlisted media IDs are fixed in source; the corresponding raw resources are
+classified under TRACKED_PROJECT_ASSET and are part of the intended public
+repository.
 
 ## IGNORED_MACHINE_LOCAL_CONFIG
 
@@ -129,24 +130,29 @@ SharedPreferences. This persistence is distinct from BuildConfig and from
 the broker's session storage. A runtime endpoint change is an operational
 device action, not a source change.
 
-## PRIVATE_DEPLOYMENT_ASSET
+## TRACKED_PROJECT_ASSET
 
-The following assets are local deployment inputs:
+The following project-produced assets are tracked source resources and are
+included in the intended public repository:
 
 - app/src/main/res/raw/elderly_hand_exercise.mp4;
-- app/src/main/res/raw/elderly_leg_exercise.mp4;
+- app/src/main/res/raw/elderly_leg_exercise.mp4.
+
+Fresh clones must contain both resources. The generic `play_media` command
+accepts their fixed media IDs only. If a generated or installed build is
+missing a resource, Android retains the defensive
+`media_unavailable:<media_id>` result; Android does not accept an arbitrary
+path, URL, or content URI through the command contract.
+
+## PRIVATE_OR_GENERATED_ASSET
+
+The following assets remain outside the public repository:
+
 - the private demo keystore and certificate material;
 - any generated APK/AAB or capture artifacts.
 
-The two exercise videos are optional and ignored by Git. The generic
-play_media command accepts their fixed media IDs only. If an optional raw
-resource is absent from the installed build, Android returns
-media_unavailable:<media_id>; Android does not accept an arbitrary path, URL,
-or content URI through the command contract.
-
-Private deployment assets do not become public configuration merely because a
-build variant can reference them. The assets remain outside the tracked
-publication set.
+Private or generated assets remain outside the tracked publication set even
+when a build variant can reference them.
 
 ## EXTERNAL_SERVICE_CONFIG
 
@@ -171,7 +177,7 @@ compatibility. AI6_COMPATIBILITY_PENDING_FINAL_REVIEW.
 | Media v1.1 enabled/deadline | Yes | The selected variant's media runtime behavior changes. |
 | MQTT host, port, or robot ID | No | Device runtime settings apply the one active endpoint and its topic set. |
 | MQTT outbox owner state | No | Existing pending results remain bound to their recorded endpoint. |
-| Optional exercise video | Yes, when packaging the resource into an APK | The corresponding fixed media ID can resolve only if the resource is present. |
+| Project-owned exercise video | Yes, when packaging or changing the resource in an APK | The corresponding fixed media ID resolves from the tracked raw resource; a missing packaged resource remains a defensive failure. |
 | Demo signing inputs | Yes | The build signs the demo artifact or fails closed. |
 | Android SDK path | No source rebuild by itself; required for Gradle execution | Gradle resolves the local SDK through sdk.dir. |
 

@@ -1,6 +1,6 @@
 # Current Status
 
-Status date: **2026-08-27**
+Status date: **2026-08-31**
 
 This document is the current-truth record for the accepted Android publication
 baseline. It separates current source facts from verified evidence,
@@ -14,17 +14,24 @@ and the source-oriented tree is in [REPOSITORY_MAP.md](./REPOSITORY_MAP.md).
 | --- | --- |
 | Repository | `YI-TING-EE13/temi-agent-android` |
 | Canonical branch | `main` |
-| Accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
+| Required starting canonical `main` | `e8cdf7859923c082162fd49be6c435287fd301e8` |
+| Previously accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
 | Current documentation HEAD | See the repository's current `main` branch |
 | Android package | `com.robotemi.agent` |
-| Version | `1.0.2` / `versionCode 3` |
-| Status date | `2026-08-27` |
+| Repository release candidate | `1.0.4` / `versionCode 5` |
+| Current physical Temi baseline before V4B | `1.0.3` / `versionCode 4` |
+| Status date | `2026-08-31` |
 
-The accepted implementation/runtime evidence remains tied to
-`8c458888657efca5384c6d51e5ec57e8b385d987`. Documentation-only commits after
-that baseline do not invalidate the previously accepted APK or physical-device
-evidence. The literal current documentation-inclusive HEAD should be read from
-the repository's current GitHub `main` branch, rather than hardcoded in this
+The previously accepted implementation/runtime evidence remains tied to
+`8c458888657efca5384c6d51e5ec57e8b385d987`. The V4A candidate starts from
+`e8cdf7859923c082162fd49be6c435287fd301e8` and restores the two authorized
+project-owned exercise resources while advancing the repository artifact to
+versionCode 5 / versionName 1.0.4. V4A does not install the candidate or
+replace the current physical Temi baseline, which remains versionCode 4 /
+versionName 1.0.3 until V4B.
+
+The literal current documentation-inclusive HEAD should be read from the
+repository's current GitHub `main` branch, rather than hardcoded in this
 current-status document. Any future Android source or runtime change requires
 fresh re-acceptance before it can replace the accepted implementation/runtime
 baseline.
@@ -55,9 +62,9 @@ A1 evidence is **VERIFIED** at build level:
 The public CI workflow covers JDK 21, JVM tests, and `assembleDebug`. It does
 not provide Demo signing, Temi device, private backend, or full AI6 evidence.
 
-## Accepted Demo artifact contract
+## Previously accepted Demo artifact contract
 
-The accepted Demo variant has this packaged contract:
+The previously accepted Demo variant had this packaged contract:
 
 | Field | Value |
 | --- | --- |
@@ -69,16 +76,42 @@ The accepted Demo variant has this packaged contract:
 | Media attach deadline | `10000 ms` |
 | Expected Demo signer SHA-256 | `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F` |
 
+## V4A repository release candidate
+
+The V4A repository candidate has this intended packaged contract:
+
+| Field | Value |
+| --- | --- |
+| Package | `com.robotemi.agent` |
+| `versionCode` | `5` |
+| `versionName` | `1.0.4` |
+| Project-owned raw resources | `elderly_hand_exercise.mp4`, `elderly_leg_exercise.mp4` |
+| Media v1.1 enabled | `true` in Demo |
+| Media attach deadline | `10000 ms` in Demo |
+| Physical playback status | Not `VERIFIED_DEVICE`; V4B pending |
+
+The two exercise resources are `TRACKED_PROJECT_ASSET` files. The command
+allowlist remains limited to `elderly_hand_exercise` and
+`elderly_leg_exercise`; arbitrary media paths and URLs remain prohibited.
+
 The signer digest is a public artifact-verification identity; the private
 signing inputs remain out of band. An APK hash identifies one concrete built
 artifact and is not a permanent source property. Source HEAD, version,
 signer identity, and packaged policy establish the recorded provenance. This
 repository does not currently claim bit-for-bit reproducible APK builds.
 
-## Physical Temi acceptance
+## Current physical Temi baseline
 
-The following **VERIFIED_DEVICE** evidence was accepted for the forward-upgrade
-run. The operator endpoint and machine details are intentionally omitted:
+At the start of V4A, the task-provided physical Temi baseline is
+`com.robotemi.agent`, versionCode 4 / versionName 1.0.3. V4A performs no APK
+installation, uninstall, data clear, reboot, runtime media test, MQTT change,
+or AI6 restart. The candidate remains pending V4B physical acceptance.
+
+## Previously accepted physical Temi evidence
+
+The following **VERIFIED_DEVICE** evidence was accepted for the earlier
+forward-upgrade run. The operator endpoint and machine details are intentionally
+omitted:
 
 - Existing signed app provenance was inspected.
 - Forward upgrade from `versionCode 2` to `versionCode 3` was accepted.
@@ -135,6 +168,7 @@ are present.
 Only the following are current gaps for handover:
 
 - Final Android/AI6 contract compatibility review is pending the AI6 freeze.
+- Physical playback of the restored exercise resources remains pending V4B.
 - Release and tag policy is not yet finalized.
 - Signing private-key custody remains an out-of-band operator responsibility.
 - The applicable license decision has not yet been selected.

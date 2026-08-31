@@ -74,7 +74,7 @@ play_media. Actions execute sequentially in array order.
 | navigate | target: home_base, kitchen, living_room, or meeting_room | none | Calls Robot.goTo. The Android result is dispatched, not navigation-arrival confirmation. |
 | stop | none | none | Cancels Temi TTS requests, stops movement, and hides the subtitle. The local action result is completed after the local stop operation. |
 | noop | reason: trimmed, non-empty | none | Records a no-op without a hardware side effect. The local action result is completed. |
-| play_media | media_id: elderly_hand_exercise or elderly_leg_exercise | none | Resolves an allowlisted local resource and uses the media controller. A missing optional resource fails with media_unavailable:<media_id>. |
+| play_media | media_id: elderly_hand_exercise or elderly_leg_exercise | none | Resolves one of the two tracked project-owned raw resources and uses the media controller. A missing packaged resource still fails with media_unavailable:<media_id>. |
 
 The validator trims string fields before validation. It measures speech length
 with Java String.length, not Unicode code points. The optional language field
