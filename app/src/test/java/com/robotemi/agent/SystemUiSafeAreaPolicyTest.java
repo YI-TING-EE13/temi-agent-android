@@ -1,10 +1,52 @@
 package com.robotemi.agent;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 public class SystemUiSafeAreaPolicyTest {
+    @Test
+    public void reservesObservedTemiTopOverlayAcrossWindowHeight() {
+        int topInset = SystemUiSafeAreaPolicy.resolveTopInset(
+                0, 0, 1120, 1.5f);
+
+        assertTrue(topInset > 98);
+        assertEquals(108, topInset);
+    }
+
+    @Test
+    public void reservesDensityAwareTopMinimumForShortWindow() {
+        assertEquals(108, SystemUiSafeAreaPolicy.resolveTopInset(
+                0, 0, 0, 1.5f));
+    }
+
+    @Test
+    public void proportionalTopPolicyDominatesAtLargeHeightAndLowDensity() {
+        assertEquals(180, SystemUiSafeAreaPolicy.resolveTopInset(
+                0, 0, 2000, 0.5f));
+    }
+
+    @Test
+    public void topPolicyNeverShrinksReportedSystemBarInset() {
+        assertEquals(240, SystemUiSafeAreaPolicy.resolveTopInset(
+                240, 0, 1120, 1.5f));
+    }
+
+    @Test
+    public void topPolicyNeverShrinksReportedDisplayCutoutInset() {
+        assertEquals(260, SystemUiSafeAreaPolicy.resolveTopInset(
+                0, 260, 1120, 1.5f));
+    }
+
+    @Test
+    public void invalidDensityUsesDeterministicTopMinimum() {
+        assertEquals(72, SystemUiSafeAreaPolicy.resolveTopInset(
+                0, 0, 0, 0f));
+        assertEquals(72, SystemUiSafeAreaPolicy.resolveTopInset(
+                0, 0, -1, -1f));
+    }
+
     @Test
     public void reservesProportionalLauncherAreaAcrossWindowHeights() {
         assertEquals(84, SystemUiSafeAreaPolicy.resolveBottomInset(

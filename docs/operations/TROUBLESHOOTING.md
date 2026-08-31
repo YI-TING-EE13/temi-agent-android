@@ -30,6 +30,31 @@ Run the failing task again only after correcting the matching cause. Keep the
 original failure output private if it contains local paths or environment
 details.
 
+## Temi top controls do not respond
+
+V4D identified a Temi-owned `SYSTEM_ALERT_WINDOW` from
+`com.roboteam.teamy.usa` covering `[0,0][1920,98]`. The region overlapped the
+exercise controls, even though Android reported the controls as visible,
+enabled, and clickable. A lower MQTT settings control responded to a normal
+coordinate tap, and keyboard focus reached the hand button. These observations
+distinguish top-edge touch occlusion from a general ADB or playback failure.
+
+For a bounded diagnosis, keep the exact operator-owned serial on every command
+and inspect the current stack without changing device state:
+
+```text
+adb -s <SERIAL> shell dumpsys window windows
+adb -s <SERIAL> shell dumpsys input
+adb -s <SERIAL> shell uiautomator dump /dev/tty
+```
+
+Confirm the focused `MainActivity`, the visible Temi top window, its touchable
+region, and the current exercise-button bounds. Do not disable or modify the
+Temi overlay, clear package data, reboot, or publish a command as a workaround.
+The V4E 1.0.5 candidate applies a centralized Temi top-safe-area policy to
+`appContent`; the candidate is build-verified only. Physical coordinate taps
+and hand/leg playback acceptance remain deferred to V4F.
+
 ## Demo signing fails
 
 `app/build.gradle` deliberately validates Demo signing before

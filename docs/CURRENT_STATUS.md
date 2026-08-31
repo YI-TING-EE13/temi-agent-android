@@ -14,21 +14,22 @@ and the source-oriented tree is in [REPOSITORY_MAP.md](./REPOSITORY_MAP.md).
 | --- | --- |
 | Repository | `YI-TING-EE13/temi-agent-android` |
 | Canonical branch | `main` |
-| Required starting canonical `main` | `e8cdf7859923c082162fd49be6c435287fd301e8` |
+| Required starting canonical `main` | `e08d7f46835d2dcffd76a77bf3e1fb423dc9c0ce` |
 | Previously accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
 | Current documentation HEAD | See the repository's current `main` branch |
 | Android package | `com.robotemi.agent` |
-| Repository release candidate | `1.0.4` / `versionCode 5` |
-| Current physical Temi baseline before V4B | `1.0.3` / `versionCode 4` |
+| Repository release candidate | `1.0.5` / `versionCode 6` |
+| Current physical Temi baseline before V4F | `1.0.4` / `versionCode 5` |
 | Status date | `2026-08-31` |
 
 The previously accepted implementation/runtime evidence remains tied to
-`8c458888657efca5384c6d51e5ec57e8b385d987`. The V4A candidate starts from
-`e8cdf7859923c082162fd49be6c435287fd301e8` and restores the two authorized
-project-owned exercise resources while advancing the repository artifact to
-versionCode 5 / versionName 1.0.4. V4A does not install the candidate or
-replace the current physical Temi baseline, which remains versionCode 4 /
-versionName 1.0.3 until V4B.
+`8c458888657efca5384c6d51e5ec57e8b385d987`. The V4E candidate starts from
+`e08d7f46835d2dcffd76a77bf3e1fb423dc9c0ce`, retains the two authorized
+project-owned exercise resources, and adds the central Temi top-safe-area
+policy while advancing the repository artifact to versionCode 6 /
+versionName 1.0.5. V4E does not install the candidate or replace the current
+physical Temi baseline, which remains versionCode 5 / versionName 1.0.4 until
+V4F.
 
 The literal current documentation-inclusive HEAD should be read from the
 repository's current GitHub `main` branch, rather than hardcoded in this
@@ -76,23 +77,48 @@ The previously accepted Demo variant had this packaged contract:
 | Media attach deadline | `10000 ms` |
 | Expected Demo signer SHA-256 | `4DA8461B45B02FADCB042F63151FEE05D56EBD5105EB721D7D62E30B88513A7F` |
 
-## V4A repository release candidate
+## V4E repository release candidate
 
-The V4A repository candidate has this intended packaged contract:
+The V4E repository candidate has this packaged contract:
 
 | Field | Value |
 | --- | --- |
 | Package | `com.robotemi.agent` |
-| `versionCode` | `5` |
-| `versionName` | `1.0.4` |
+| `versionCode` | `6` |
+| `versionName` | `1.0.5` |
 | Project-owned raw resources | `elderly_hand_exercise.mp4`, `elderly_leg_exercise.mp4` |
 | Media v1.1 enabled | `true` in Demo |
 | Media attach deadline | `10000 ms` in Demo |
-| Physical playback status | Not `VERIFIED_DEVICE`; V4B pending |
+| Temi top-safe-area policy | `max(0.09 * windowHeight, 72dp)`, then max with system/cutout insets |
+| Physical playback status | Not `VERIFIED_DEVICE`; V4F pending |
 
 The two exercise resources are `TRACKED_PROJECT_ASSET` files. The command
 allowlist remains limited to `elderly_hand_exercise` and
 `elderly_leg_exercise`; arbitrary media paths and URLs remain prohibited.
+
+V4D identified a Temi-owned `SYSTEM_ALERT_WINDOW` from
+`com.roboteam.teamy.usa` covering the physical region `[0,0][1920,98]`.
+The region overlapped the exercise controls, while MainActivity and the
+lower MQTT settings control continued to receive input. V4E adds the
+Temi-specific top-safe-area calculation to `SystemUiSafeAreaPolicy` and
+applies it to `appContent` top padding. The declarative layout and media
+playback implementation remain unchanged.
+
+V4E is source/build evidence only. Physical coordinate taps and hand/leg
+playback remain `NOT_VERIFIED_DEVICE` until V4F.
+
+## V4E verification record
+
+The V4E candidate was verified with the supported JDK 21 and Gradle 8.13
+wrapper:
+
+- `:app:testDebugUnitTest`: `294/294` passed, including six new top-policy
+  tests.
+- `:app:assembleDebug`: passed.
+- `:app:assembleDemo`: passed, including the authorized signer check.
+- Demo artifact preflight: passed for `com.robotemi.agent`, versionCode 6 /
+  versionName 1.0.5, `debuggable=false`, and Media v1.1 enabled.
+- Demo APK SHA-256: `759B06EB35B876C60FDC11BD58B16915C59F9E6E6B03492F4F1256490CABB252`.
 
 The signer digest is a public artifact-verification identity; the private
 signing inputs remain out of band. An APK hash identifies one concrete built
@@ -102,10 +128,10 @@ repository does not currently claim bit-for-bit reproducible APK builds.
 
 ## Current physical Temi baseline
 
-At the start of V4A, the task-provided physical Temi baseline is
-`com.robotemi.agent`, versionCode 4 / versionName 1.0.3. V4A performs no APK
+At the start of V4E, the task-provided physical Temi baseline is
+`com.robotemi.agent`, versionCode 5 / versionName 1.0.4. V4E performs no APK
 installation, uninstall, data clear, reboot, runtime media test, MQTT change,
-or AI6 restart. The candidate remains pending V4B physical acceptance.
+or AI6 restart. The candidate remains pending V4F physical acceptance.
 
 ## Previously accepted physical Temi evidence
 
@@ -168,7 +194,8 @@ are present.
 Only the following are current gaps for handover:
 
 - Final Android/AI6 contract compatibility review is pending the AI6 freeze.
-- Physical playback of the restored exercise resources remains pending V4B.
+- Physical coordinate-tap and hand/leg playback of the restored exercise
+  resources remain pending V4F.
 - Release and tag policy is not yet finalized.
 - Signing private-key custody remains an out-of-band operator responsibility.
 - The applicable license decision has not yet been selected.

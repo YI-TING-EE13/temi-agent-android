@@ -14,16 +14,16 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 - [ ] `git diff --check`, `git diff --stat`, and the full diff review pass.
 - [ ] The candidate changes only the intended files and contains no Android
       source, test, generated output, or private configuration changes.
-- [ ] `versionCode` and `versionName` are deliberate and recorded. The V4A
-      repository release candidate is `com.robotemi.agent`, versionCode 5,
-      versionName 1.0.4; the current physical Temi baseline remains versionCode
-      4, versionName 1.0.3 until V4B.
+- [ ] `versionCode` and `versionName` are deliberate and recorded. The V4E
+      repository release candidate is `com.robotemi.agent`, versionCode 6,
+      versionName 1.0.5; the current physical Temi baseline remains versionCode
+      5, versionName 1.0.4 until V4F.
 
 ## Tests
 
 - [ ] Run `:app:testDebugUnitTest` with the supported JDK 21 toolchain and
       record the actual test count and result. The accepted baseline was
-      288/288; the count may change.
+      288/288; the V4E candidate record is 294/294.
 - [ ] Run `:app:assembleDebug` and record the result.
 - [ ] Run any release-specific tests required by the candidate, or record
       `NOT_APPLICABLE` with the reason.

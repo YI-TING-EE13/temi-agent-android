@@ -463,6 +463,13 @@ public class MainActivity extends AppCompatActivity
                             WindowInsetsCompat.Type.displayCutout());
                     int windowHeight = view.getResources()
                             .getDisplayMetrics().heightPixels;
+                    int topSafeInset =
+                            SystemUiSafeAreaPolicy.resolveTopInset(
+                                    systemBars.top,
+                                    displayCutout.top,
+                                    windowHeight,
+                                    view.getResources()
+                                            .getDisplayMetrics().density);
                     int bottomSafeInset =
                             SystemUiSafeAreaPolicy.resolveBottomInset(
                                     systemBars.bottom,
@@ -479,8 +486,7 @@ public class MainActivity extends AppCompatActivity
                     view.setPadding(
                             initialLeft + Math.max(
                                     systemBars.left, displayCutout.left),
-                            initialTop + Math.max(
-                                    systemBars.top, displayCutout.top),
+                            initialTop + topSafeInset,
                             initialRight + trailingSafeInset,
                             initialBottom + bottomSafeInset);
                     return windowInsets;
