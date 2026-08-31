@@ -37,8 +37,10 @@ publication and must remain tracked:
 - app/src/main/res/raw/elderly_leg_exercise.mp4.
 
 Fresh clones must contain both resources. Their fixed media IDs remain
-`elderly_hand_exercise` and `elderly_leg_exercise`; physical Temi playback is
-not promoted to `VERIFIED_DEVICE` by this publication change.
+`elderly_hand_exercise` and `elderly_leg_exercise`. V4H separately accepted
+local physical coordinate-tap playback of both resources on the installed
+1.0.5/code6 candidate; this does not promote the external full-stack
+broker/AI6/Temi `play_media` path to `VERIFIED_E2E`.
 
 ## Documentation classification
 

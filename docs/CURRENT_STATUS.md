@@ -14,12 +14,14 @@ and the source-oriented tree is in [REPOSITORY_MAP.md](./REPOSITORY_MAP.md).
 | --- | --- |
 | Repository | `YI-TING-EE13/temi-agent-android` |
 | Canonical branch | `main` |
-| Required starting canonical `main` | `e08d7f46835d2dcffd76a77bf3e1fb423dc9c0ce` |
+| Required starting canonical `main` for V4I | `63704249a468021807e922118991f28c13d6e9bf` |
+| Historical V4E candidate starting `main` | `e08d7f46835d2dcffd76a77bf3e1fb423dc9c0ce` |
 | Previously accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
 | Current documentation HEAD | See the repository's current `main` branch |
 | Android package | `com.robotemi.agent` |
 | Repository release candidate | `1.0.5` / `versionCode 6` |
-| Current physical Temi baseline before V4F | `1.0.4` / `versionCode 5` |
+| Historical physical Temi baseline before V4F | `1.0.4` / `versionCode 5` |
+| Current accepted physical Temi | `1.0.5` / `versionCode 6` |
 | Status date | `2026-08-31` |
 
 The previously accepted implementation/runtime evidence remains tied to
@@ -27,9 +29,10 @@ The previously accepted implementation/runtime evidence remains tied to
 `e08d7f46835d2dcffd76a77bf3e1fb423dc9c0ce`, retains the two authorized
 project-owned exercise resources, and adds the central Temi top-safe-area
 policy while advancing the repository artifact to versionCode 6 /
-versionName 1.0.5. V4E does not install the candidate or replace the current
-physical Temi baseline, which remains versionCode 5 / versionName 1.0.4 until
-V4F.
+versionName 1.0.5. At the V4E stage, the candidate was not installed and the
+physical Temi baseline remained versionCode 5 / versionName 1.0.4 until the
+later V4F/V4H acceptance work. That paragraph records the historical V4E
+pre-acceptance state; the later physical result is recorded below.
 
 The literal current documentation-inclusive HEAD should be read from the
 repository's current GitHub `main` branch, rather than hardcoded in this
@@ -90,7 +93,7 @@ The V4E repository candidate has this packaged contract:
 | Media v1.1 enabled | `true` in Demo |
 | Media attach deadline | `10000 ms` in Demo |
 | Temi top-safe-area policy | `max(0.09 * windowHeight, 72dp)`, then max with system/cutout insets |
-| Physical playback status | Not `VERIFIED_DEVICE`; V4F pending |
+| Physical playback status | `VERIFIED_DEVICE` via V4H on installed versionCode 6 / versionName 1.0.5 |
 
 The two exercise resources are `TRACKED_PROJECT_ASSET` files. The command
 allowlist remains limited to `elderly_hand_exercise` and
@@ -104,8 +107,9 @@ Temi-specific top-safe-area calculation to `SystemUiSafeAreaPolicy` and
 applies it to `appContent` top padding. The declarative layout and media
 playback implementation remain unchanged.
 
-V4E is source/build evidence only. Physical coordinate taps and hand/leg
-playback remain `NOT_VERIFIED_DEVICE` until V4F.
+At the V4E stage, this was source/build evidence only. V4F physically
+confirmed the safe placement of the exercise controls, and V4H later
+completed the physical hand and leg coordinate-tap playback acceptance.
 
 ## V4E verification record
 
@@ -126,12 +130,55 @@ artifact and is not a permanent source property. Source HEAD, version,
 signer identity, and packaged policy establish the recorded provenance. This
 repository does not currently claim bit-for-bit reproducible APK builds.
 
-## Current physical Temi baseline
+## V4H physical acceptance closure
+
+The installed accepted physical candidate is `com.robotemi.agent`, versionCode
+`6`, versionName `1.0.5`. Physical acceptance requires `MainActivity` to be
+resumed and its window focused. After one MainActivity launch, a bounded
+foreground monitor produced `47` samples across at least `27584 ms`;
+`MainActivity` remained foreground and no autonomous `StandbyActivity`
+takeover was observed.
+
+With that foreground precondition satisfied, the following physical checks
+passed:
+
+| Check | Result |
+| --- | --- |
+| MQTT coordinate control | `PASS`; one coordinate tap opened the MQTT settings control and a center tap closed it, with `MainActivity` remaining resumed/focused. |
+| Hand coordinate tap and playback | `PASS`; one tap at `[874,156]` on HAND `[793,120][955,192]`; the hand video was visible, advancing, and completed naturally. |
+| Leg coordinate tap and playback | `PASS`; one tap at `[1036,156]` on LEG `[955,120][1117,192]`; the leg video was visible, advancing, and completed naturally. |
+
+V4F's physical top-safe-area result is
+`TOP_SAFE_AREA_PHYSICAL_ACCEPTANCE = PASS`: the accepted HAND and LEG bounds
+are outside the historical Temi-owned top region `[0,0][1920,98]`. The
+implemented policy remains `max(0.09 * windowHeight, 72dp)`, combined with
+the system-bar and display-cutout inset.
+
+`StandbyActivity` can be the foreground owner on Temi, so diagnosis and
+operator readiness must check the resumed activity, top activity, and focused
+window before coordinate acceptance. A prior V4G readiness snapshot found
+`StandbyActivity` resumed/focused while `MainActivity` was paused/hidden. V4H
+did not observe an autonomous takeover after its launch during the bounded
+monitor; this record does not claim that `StandbyActivity` always
+automatically takes foreground.
+
+Final defect classification:
+
+- `ANDROID_MEDIA_SOURCE_BUG = NO`
+- `ANDROID_TOUCH_SOURCE_BUG = NO`
+- `ANDROID_SOURCE_FIX_REQUIRED = NO`
+
+This is bounded physical local UI/media evidence. It does not promote the
+external AI6, broker, or full-stack `play_media` path to `VERIFIED_E2E`.
+
+## V4E physical baseline (historical)
 
 At the start of V4E, the task-provided physical Temi baseline is
 `com.robotemi.agent`, versionCode 5 / versionName 1.0.4. V4E performs no APK
 installation, uninstall, data clear, reboot, runtime media test, MQTT change,
-or AI6 restart. The candidate remains pending V4F physical acceptance.
+or AI6 restart. At that stage, the candidate remained pending V4F physical
+acceptance. This is the pre-acceptance record; it is superseded by the V4H
+result above without rewriting the historical observation.
 
 ## Previously accepted physical Temi evidence
 
@@ -194,8 +241,6 @@ are present.
 Only the following are current gaps for handover:
 
 - Final Android/AI6 contract compatibility review is pending the AI6 freeze.
-- Physical coordinate-tap and hand/leg playback of the restored exercise
-  resources remain pending V4F.
 - Release and tag policy is not yet finalized.
 - Signing private-key custody remains an out-of-band operator responsibility.
 - The applicable license decision has not yet been selected.

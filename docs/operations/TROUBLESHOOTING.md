@@ -39,6 +39,15 @@ enabled, and clickable. A lower MQTT settings control responded to a normal
 coordinate tap, and keyboard focus reached the hand button. These observations
 distinguish top-edge touch occlusion from a general ADB or playback failure.
 
+V4H later accepted the 1.0.5/code6 hand and leg coordinate taps and local video
+playback after `MainActivity` was confirmed resumed and its window focused.
+Treat that foreground state as a prerequisite for physical acceptance.
+`StandbyActivity` can be the foreground owner on Temi, so check the resumed
+activity, top activity, and focused window during diagnosis and operator
+readiness. V4H observed no autonomous takeover during its bounded monitor and
+does not establish that `StandbyActivity` always automatically takes
+foreground.
+
 For a bounded diagnosis, keep the exact operator-owned serial on every command
 and inspect the current stack without changing device state:
 
@@ -52,8 +61,11 @@ Confirm the focused `MainActivity`, the visible Temi top window, its touchable
 region, and the current exercise-button bounds. Do not disable or modify the
 Temi overlay, clear package data, reboot, or publish a command as a workaround.
 The V4E 1.0.5 candidate applies a centralized Temi top-safe-area policy to
-`appContent`; the candidate is build-verified only. Physical coordinate taps
-and hand/leg playback acceptance remain deferred to V4F.
+`appContent`; V4F physically confirmed HAND `[793,120][955,192]` and LEG
+`[955,120][1117,192]` outside the historical `[0,0][1920,98]` overlay. V4H
+recorded PASS for both coordinate-tap playback paths. If `MainActivity` is not
+resumed and focused, stop the coordinate acceptance attempt and restore that
+readiness condition before classifying a source or touch-dispatch defect.
 
 ## Demo signing fails
 

@@ -14,10 +14,10 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 - [ ] `git diff --check`, `git diff --stat`, and the full diff review pass.
 - [ ] The candidate changes only the intended files and contains no Android
       source, test, generated output, or private configuration changes.
-- [ ] `versionCode` and `versionName` are deliberate and recorded. The V4E
-      repository release candidate is `com.robotemi.agent`, versionCode 6,
-      versionName 1.0.5; the current physical Temi baseline remains versionCode
-      5, versionName 1.0.4 until V4F.
+- [ ] `versionCode` and `versionName` are deliberate and recorded. The accepted
+      Android candidate is `com.robotemi.agent`, versionCode 6, versionName
+      1.0.5; the V4E versionCode 5 / versionName 1.0.4 physical baseline is a
+      historical pre-acceptance record, and V4H closed physical acceptance.
 
 ## Tests
 
@@ -85,6 +85,23 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
       exception.
 - [ ] Any broader Temi, MQTT, camera, voice, navigation, media, or external
       service acceptance is recorded separately with its actual evidence.
+
+## Exercise media and top safe-area acceptance, when required
+
+- [ ] Before coordinate testing, confirm that `MainActivity` is resumed and its
+      window is focused. `StandbyActivity` can be the foreground owner, so
+      check the current resumed/top/focused window during operator readiness;
+      do not assume that it always automatically takes foreground.
+- [ ] Confirm the centralized top-safe-area policy is
+      `max(0.09 * windowHeight, 72dp)`, combined with system-bar and cutout
+      insets, and record the resulting exercise-button bounds.
+- [ ] Record one hand and one leg coordinate tap, with each local video
+      visible, advancing, and completing naturally.
+- [ ] Record a bounded foreground monitor and state whether any autonomous
+      `StandbyActivity` takeover was observed.
+- [ ] Keep local coordinate playback separate from full canonical broker/AI6
+      or `VERIFIED_E2E` acceptance, and record the defect classification when
+      the incident is closed.
 
 ## Publication
 
