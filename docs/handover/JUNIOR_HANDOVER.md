@@ -29,17 +29,18 @@ Read the following documents in order. The links are relative to this
 handover page:
 
 1. [Handover readiness](HANDOVER_READINESS.md)
-2. [Current status](../CURRENT_STATUS.md)
-3. [Repository map](../REPOSITORY_MAP.md)
-4. [Verified features](../VERIFIED_FEATURES.md)
-5. [Android architecture](../architecture/ANDROID_ARCHITECTURE.md)
-6. [MQTT interface](../contracts/MQTT_INTERFACE.md)
-7. [Command contract](../contracts/COMMAND_CONTRACT.md)
-8. [Configuration contract](../contracts/CONFIGURATION_CONTRACT.md)
-9. [Build and test](../operations/BUILD_AND_TEST.md)
-10. [ADB and install](../operations/ADB_AND_INSTALL.md)
-11. [Troubleshooting](../operations/TROUBLESHOOTING.md)
-12. [Release checklist](../operations/RELEASE_CHECKLIST.md)
+2. [Academic-lab development workflow](DEVELOPMENT_WORKFLOW.md)
+3. [Current status](../CURRENT_STATUS.md)
+4. [Repository map](../REPOSITORY_MAP.md)
+5. [Verified features](../VERIFIED_FEATURES.md)
+6. [Android architecture](../architecture/ANDROID_ARCHITECTURE.md)
+7. [MQTT interface](../contracts/MQTT_INTERFACE.md)
+8. [Command contract](../contracts/COMMAND_CONTRACT.md)
+9. [Configuration contract](../contracts/CONFIGURATION_CONTRACT.md)
+10. [Build and test](../operations/BUILD_AND_TEST.md)
+11. [ADB and install](../operations/ADB_AND_INSTALL.md)
+12. [Troubleshooting](../operations/TROUBLESHOOTING.md)
+13. [Release checklist](../operations/RELEASE_CHECKLIST.md)
 
 Read [Demo signing handover](../operations/SIGNING_HANDOVER.md) before
 creating or distributing a Demo artifact.
@@ -169,22 +170,26 @@ apply casually.
 
 ## Typical workflow
 
-Use the project’s normal change path:
+Use the [academic-lab development workflow](DEVELOPMENT_WORKFLOW.md) for the
+full Issue, branch, review, evidence, and escalation rules. The short form is:
 
 ```text
-feature branch
-  -> source/test change
-  -> local tests
+PROJECT-01 direction
+  -> GitHub Issue and change classification
+  -> feature, fix, experiment, or documentation branch
+  -> ANDROID-01 implementation and local tests
   -> pull request
-  -> CI
-  -> review
+  -> Android CI and review
+  -> PROJECT-01 lightweight final review when required
   -> merge
-  -> Demo build and device acceptance when required
+  -> signed Demo and device acceptance when required
+  -> current-status/evidence update and Issue closure
 ```
 
-Keep source, tests, documentation, and private runtime assets in their
-declared scopes. Record physical or external-service evidence separately from
-local build evidence.
+`PROJECT-01` provides direction and system-level review; `ANDROID-01` owns
+routine Android decomposition, implementation, tests, documentation, PR work,
+and review fixes. Keep physical and external-service evidence separate from
+local source, unit, and build evidence.
 
 ## What not to commit
 

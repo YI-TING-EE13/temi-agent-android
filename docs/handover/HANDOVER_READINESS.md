@@ -6,6 +6,10 @@ external ownership, and decisions that remain with the project owner. Detailed
 procedures remain in the linked architecture, contract, and operations
 documents.
 
+Use [Academic-Lab Android Development Workflow](DEVELOPMENT_WORKFLOW.md) for
+the shared role split, Issue, branch, pull-request, CI, review, merge, and
+evidence process.
+
 ## 1. Accepted baseline
 
 | Item | Current accepted value |
