@@ -68,13 +68,17 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 
 ## Current release governance
 
-- [ ] Record that GitHub `main` branch protection is currently disabled.
+- [ ] Confirm that GitHub `main` branch protection remains enabled with required
+      status context `test-and-build`. The current public baseline is
+      `ENABLED` / `test-and-build`.
 - [ ] Use the public CI result for its actual coverage: JDK 21 JVM tests and
       `assembleDebug` only.
 - [ ] Do not expect CI to hold signing material; the signed Demo gate is
       currently manual.
 - [ ] Treat physical Temi acceptance as a separate manual gate.
-- [ ] Record that no Git tags or releases currently exist.
+- [ ] Record the intended release/tag decision before publishing a new
+      release. The public `v1.0.5` release exists and is the Android handover
+      baseline; this checklist does not infer a future tag policy.
 - [ ] Record that an authoritative accepted signed-APK archive is not yet
       defined.
 
@@ -126,9 +130,9 @@ desktop or unit-test result to physical or AI6 end-to-end acceptance.
 - [ ] The reviewed GitHub pull request is merged to `main` by the authorized
       owner before publication is called complete.
 - [ ] Required GitHub CI is `PASS` for the merged commit.
-- [ ] The release/tag decision is recorded as `POLICY_PENDING` until the
-      project owner finalizes tag policy. A tag is not required by this
-      checklist.
+- [ ] For a new publication, record the project-owner release/tag decision.
+      The existing public `v1.0.5` release is the Android handover baseline;
+      future release/tag policy remains owner-governed.
 - [ ] The signed artifact checksum, source `HEAD`, signer fingerprint, build
       variant, and preflight output are recorded for provenance.
 - [ ] The checksum record is not described as proof of bit-for-bit APK
@@ -140,4 +144,5 @@ Stop and ask the project owner when the signer is wrong or unavailable, the
 version is not forward, the target identity is uncertain, an owner-authorized
 media resource is missing, a required CI result is not terminal, or a requested recovery would
 require uninstalling or clearing data. The project has no finalized automatic
-rollback or tag policy; do not invent one in the release record.
+rollback policy, and future tag policy beyond the public `v1.0.5` baseline
+remains owner-governed; do not invent either in the release record.
