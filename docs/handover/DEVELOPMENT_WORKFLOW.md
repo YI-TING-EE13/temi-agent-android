@@ -194,12 +194,15 @@ is:
 contract definition
   -> backwards-compatible transition plan where feasible
   -> producer and consumer tests
-  -> Android implementation
-  -> AI6 implementation
-  -> CI in each repository
+  -> implement each affected repository independently
+  -> CI / required validation in each repository
   -> documented safe merge order
-  -> bounded integration/device acceptance
+  -> bounded integration/device acceptance when required
 ```
+
+Implementation order and merge order are determined by the contract and
+backwards-compatibility plan. Neither Android nor AI6 is globally required to
+go first.
 
 The Android repository does not define an AI6 implementation procedure. Ask
 `AI6-01` for the external runtime procedure and evidence when the Issue needs
