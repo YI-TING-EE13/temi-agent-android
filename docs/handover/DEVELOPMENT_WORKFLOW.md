@@ -13,7 +13,7 @@ mapping for a role belongs outside the public repository.
 | Role | Responsibility |
 | --- | --- |
 | `PROJECT-01` | Provides research and project direction, priority, major constraints, acceptance expectations, advice, feedback, and a lightweight final governance review when required. `PROJECT-01` is not the routine Android implementation operator. |
-| `ANDROID-01` | Owns Android Issue decomposition, source analysis, technical design, implementation, tests, documentation, pull-request preparation, review fixes, and Android evidence collection. |
+| `ANDROID-01` | Owns Android Issue decomposition, source analysis, technical design, implementation, tests, documentation, review-packet contents, review fixes, and Android evidence collection. |
 | `ANDROID-02` | Provides backup Android maintenance and review coverage. |
 | `TEMI-01` | Owns physical Temi, ADB, installation, and physical-acceptance operations. |
 | `AI6-01` | Owns the external AI6 repository and runtime boundary. |
@@ -35,12 +35,14 @@ PROJECT-01 research/project direction
   -> change classification
   -> feature, fix, experiment, or documentation branch
   -> ANDROID-01-owned implementation
-  -> local tests
-  -> Pull Request
-  -> Android CI
-  -> review
-  -> PROJECT-01 lightweight final review when required
-  -> merge
+  -> tests / validation
+  -> documentation / evidence
+  -> review-packet preparation
+  -> commit and push
+  -> PROJECT-01 / GITHUB-01 PR creation and management
+  -> Android CI / required validation
+  -> project-level review
+  -> merge decision
   -> signed Demo and physical Temi acceptance when required
   -> current-status and evidence update
   -> Issue closure
@@ -48,8 +50,12 @@ PROJECT-01 research/project direction
 
 `PROJECT-01` supplies direction and reviews system implications. `ANDROID-01`
 turns that direction into an implementable Issue and owns routine Android
-engineering. `PROJECT-01` does not need to approve each implementation detail
-or commit.
+engineering, including review-packet contents and review-fix commits.
+`PROJECT-01` / `GITHUB-01` own PR creation, PR management, project-level
+review, and the merge decision. The implementation owner may push additional
+commits to the same branch for review fixes, but does not create or manage the
+PR or merge it. `PROJECT-01` does not need to approve each implementation
+detail or commit.
 
 ## Start from the accepted base
 
@@ -159,8 +165,10 @@ Every non-trivial pull request must include:
 - `Decision Needed: NONE` or the exact `PROJECT-01` decision.
 - Risk and rollback note when relevant.
 
-The packet lets `PROJECT-01` review direction, evidence, scope, and open
-decisions without replacing the normal Android implementation review.
+`ANDROID-01` owns the packet contents and review-fix commits. The packet lets
+`PROJECT-01` review direction, evidence, scope, and open decisions without
+replacing the normal Android implementation review. `PROJECT-01` / `GITHUB-01`
+own PR creation and management.
 
 ## Lightweight `PROJECT-01` review
 

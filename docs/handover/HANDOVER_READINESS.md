@@ -20,6 +20,8 @@ evidence process.
 | G3B audit baseline | `b22cce606074e1843bcd4770517482336522942e` (audit baseline, not a permanent future documentation HEAD) |
 | Package | `com.robotemi.agent` |
 | Android version | `versionCode 6` / `versionName 1.0.5` |
+| Public GitHub release / Android handover baseline | `v1.0.5` exists |
+| GitHub `main` branch protection | Enabled; required status context `test-and-build` |
 | Current JVM result | `294/294` tests passed |
 | Demo role | Signed, non-debuggable acceptance/deployment variant; signing access remains owner-controlled. |
 | Accepted installed APK SHA-256 | `0F386BE227ED964CA25507A15589E113259B15DDC7C9166B59B6B2640EAECEA4` |
@@ -124,7 +126,7 @@ ANDROID_SOURCE_FIX_REQUIRED = NO
 | LM Studio | Local-model runtime owner; assignment remains `OWNER_ASSIGNMENT_REQUIRED` | Treat model serving as external; do not add its endpoint or credentials here. |
 | WebSocket adapter/viewer | Streaming adapter/viewer owner; assignment remains `OWNER_ASSIGNMENT_REQUIRED` | Supply deployment-specific WebSocket endpoints out of band and verify the bounded stream path. |
 | Demo signing | Project signing custodian; successor assignment is `OWNER_DECISION_REQUIRED` | Request access through the approved private channel; never copy signing material into Git. |
-| GitHub/release governance | Project owner/release maintainer; assignment remains `OWNER_ASSIGNMENT_REQUIRED` | Decide branch protection, tags, releases, license, and artifact publication policy. |
+| GitHub/release governance | Project owner/release maintainer; assignment remains `OWNER_ASSIGNMENT_REQUIRED` | Maintain protected `main` and required CI; decide future tags/releases, license, and artifact publication policy. |
 
 ## 5. Runtime prerequisites
 
@@ -172,10 +174,9 @@ new compatibility and acceptance decision; it is not a routine device toggle.
 
 The successor must not decide these items unilaterally:
 
-- `RELEASE_TAG_POLICY`: no Git tags or releases currently exist.
+- `RELEASE_TAG_POLICY`: public release `v1.0.5` exists as the Android handover
+  baseline; future release/tag policy remains a project-owner decision.
 - `LICENSE`: no `LICENSE` file exists; do not add one as part of G3B.
-- `BRANCH_PROTECTION`: GitHub `main` protection is currently disabled; enabling
-  it is an owner decision.
 - `SIGNING_SUCCESSOR`: assign primary and backup signing custody.
 - `SIGNING_BACKUP_RECOVERY`: define protected backup and disaster recovery.
 - `ACCEPTED_APK_ARCHIVE`: define the authoritative signed-APK archive.
@@ -190,7 +191,8 @@ require their own scope and acceptance if pursued:
 
 - target SDK 30 and Java 8 source compatibility modernization;
 - signed-Demo and physical Temi checks outside the current public CI workflow;
-- release/tag, branch-protection, license, and accepted-artifact governance;
+- future release/tag policy beyond the public `v1.0.5` baseline, license, and
+  accepted-artifact governance;
 - broader navigation, turn, stop, voice, and full Android-to-AI6 acceptance;
 - universal WebSocket deployment and sustained camera-stream acceptance.
 

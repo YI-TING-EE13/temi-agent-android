@@ -21,7 +21,9 @@ The successor landing register is [HANDOVER_READINESS.md](./handover/HANDOVER_RE
 | Previously accepted implementation/runtime baseline | `8c458888657efca5384c6d51e5ec57e8b385d987` |
 | Current documentation HEAD | See the repository's current `main` branch |
 | Android package | `com.robotemi.agent` |
-| Repository release candidate | `1.0.5` / `versionCode 6` |
+| Public GitHub release / Android handover baseline | `v1.0.5` exists (`versionName 1.0.5` / `versionCode 6`) |
+| GitHub `main` branch protection | Enabled |
+| Required `main` status context | `test-and-build` |
 | Historical physical Temi baseline before V4F | `1.0.4` / `versionCode 5` |
 | Current accepted physical Temi | `1.0.5` / `versionCode 6` |
 | Status date | `2026-08-31` |
@@ -281,9 +283,9 @@ are present.
 The following items remain open decisions for the project owner:
 
 - Full Android/AI6 acceptance scope is not defined beyond the bounded evidence.
-- No Git tags or releases exist; release/tag policy is not finalized.
 - No `LICENSE` file exists; the repository license decision is open.
-- GitHub `main` branch protection is currently disabled.
+- Future release/tag policy beyond the public `v1.0.5` handover baseline
+  remains a project-owner decision.
 - Signing successor custody, backup/recovery, and accepted APK archive ownership
   remain out of band.
 - Resident Identity, Care Report, and legacy global MQTT actions remain disabled

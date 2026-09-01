@@ -1,6 +1,6 @@
 # TemiAgent Android
 
-[![Android](https://img.shields.io/badge/Android-API%2034-3DDC84?logo=android&logoColor=white)](https://developer.android.com/studio/releases/platforms#34)
+[![Android compileSdk 34](https://img.shields.io/badge/Android-compileSdk%2034-3DDC84?logo=android&logoColor=white)](https://developer.android.com/studio/releases/platforms#34)
 [![Gradle](https://img.shields.io/badge/Gradle-8.13-02303A?logo=gradle&logoColor=white)](https://docs.gradle.org/8.13/userguide/gradle_wrapper.html)
 [![JDK](https://img.shields.io/badge/JDK-21-437291?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![Temi SDK](https://img.shields.io/badge/Temi%20SDK-1.134.1-555555)](https://github.com/robotemi/sdk)
@@ -230,13 +230,18 @@ escalation rules. The practical handoff is:
 PROJECT-01 direction
   → GitHub Issue / work definition
   → change classification
-  → branch
-  → ANDROID-01 / implementation owner develops
-  → local verification
-  → Android CI
-  → push completed branch
-  → PROJECT-01 creates/manages PR
-  → review
+  → ANDROID-01 / Codex implementation owner:
+      issue decomposition / technical analysis
+      → branch
+      → implementation
+      → tests / validation
+      → documentation / evidence
+      → review packet preparation
+      → commit
+      → push
+  → PROJECT-01 / GITHUB-01 creates/manages PR
+  → Android CI / required validation
+  → project-level review
   → merge decision
   → Demo/device acceptance when required
 ```
@@ -244,16 +249,25 @@ PROJECT-01 direction
 For the current lab operation:
 
 ```text
-Codex / implementation owner:
-  branch → code/docs → tests → commit → push
+ANDROID-01 / Codex implementation owner:
+  issue decomposition / technical analysis
+  → branch
+  → implementation
+  → tests / validation
+  → documentation / evidence
+  → review packet preparation
+  → commit
+  → push
 
-PROJECT-01:
-  PR creation/management → review → acceptance → merge
+PROJECT-01 / GITHUB-01:
+  PR creation → PR management → project-level review → merge decision
 ```
 
-Codex and the implementation owner are not the PR owner. `PROJECT-01` sets
-research direction and manages the review/merge boundary; `ANDROID-01` owns
-routine Android implementation and validation.
+`ANDROID-01` owns engineering work, validation, documentation/evidence,
+review-packet contents, and review-fix commits. `PROJECT-01` / `GITHUB-01` own
+PR creation, PR management, project-level review, and the merge decision. The
+implementation owner may push additional commits to the same branch when
+review fixes are required, but does not create or manage the PR or merge it.
 
 ## Requirements and Limitations
 
@@ -305,8 +319,8 @@ include:
 Possible future work, not part of the current accepted baseline, includes:
 
 - Defining and accepting a broader Android/AI6 command and device scope.
-- Completing owner decisions for release tags, licensing, branch protection,
-  signing succession, and accepted-artifact archiving.
+- Completing owner decisions for licensing, signing succession, and
+  accepted-artifact archiving.
 - Modernizing the target SDK and Java source compatibility.
 - Expanding physical completion evidence for robot actions and optional
   features.

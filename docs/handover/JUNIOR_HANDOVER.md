@@ -177,19 +177,22 @@ full Issue, branch, review, evidence, and escalation rules. The short form is:
 PROJECT-01 direction
   -> GitHub Issue and change classification
   -> feature, fix, experiment, or documentation branch
-  -> ANDROID-01 implementation and local tests
-  -> pull request
-  -> Android CI and review
-  -> PROJECT-01 lightweight final review when required
-  -> merge
+  -> ANDROID-01 implementation owner: analysis, implementation, tests,
+     documentation/evidence, review packet, commit, and push
+  -> PROJECT-01 / GITHUB-01 PR creation and management
+  -> Android CI and required validation
+  -> project-level review
+  -> merge decision
   -> signed Demo and device acceptance when required
   -> current-status/evidence update and Issue closure
 ```
 
-`PROJECT-01` provides direction and system-level review; `ANDROID-01` owns
-routine Android decomposition, implementation, tests, documentation, PR work,
-and review fixes. Keep physical and external-service evidence separate from
-local source, unit, and build evidence.
+`PROJECT-01` provides direction and system-level review. `ANDROID-01` owns
+routine Android decomposition, implementation, tests, documentation/evidence,
+review-packet contents, and review fixes. `PROJECT-01` / `GITHUB-01` own PR
+creation and management and the merge decision. Keep physical and
+external-service evidence separate from local source, unit, and build
+evidence.
 
 ## What not to commit
 
