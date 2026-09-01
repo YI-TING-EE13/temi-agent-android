@@ -18,6 +18,11 @@ part of the Gradle build.
 README.md is the public setup guide. docs/publication-boundary.md records the
 publication-set decision. The performance note under docs/ is historical
 engineering evidence, not a substitute for current device acceptance.
+For the shared academic-lab Issue, branch, pull-request, CI, review, and
+evidence workflow, read
+[docs/handover/DEVELOPMENT_WORKFLOW.md](docs/handover/DEVELOPMENT_WORKFLOW.md).
+`PROJECT-01` provides direction and lightweight final review when required;
+`ANDROID-01` owns routine Android implementation and review fixes.
 
 ## Documentation authority
 
