@@ -113,6 +113,53 @@ ANDROID_TOUCH_SOURCE_BUG = NO
 ANDROID_SOURCE_FIX_REQUIRED = NO
 ```
 
+### 2026-09-30 exercise-media runtime incident
+
+The accepted `com.robotemi.agent` installation (`versionCode 6` /
+`versionName 1.0.5`) reproduced a bounded exercise-media runtime failure before
+recovery. Both the hand and leg exercise actions produced no moving video
+frame, and the application became unresponsive before media preparation. The
+observed call path was:
+
+```text
+VideoView.openVideo
+-> MediaPlayer.native_setup
+-> AudioSystem.get_audio_flinger
+```
+
+Before recovery, `media.audio_flinger`, `media.player`, and `audio` were all
+registered according to `service check`. Registration did not imply
+responsiveness: each corresponding Binder-backed `dumpsys` probe timed out
+within the bounded diagnostic window. This was recorded as runtime evidence,
+not as proof of a particular internal media-service failure mechanism.
+
+One Temi reboot was performed with explicit device-operation authorization.
+There was no APK reinstall or uninstall, package-data clear, downgrade, source
+change, or exercise-media resource change as part of that recovery. After the
+reboot, the three bounded service probes responded in approximately 135 ms,
+123 ms, and 136 ms respectively, while the installed app remained
+`versionCode 6` / `versionName 1.0.5`.
+
+Post-recovery physical playback acceptance then passed for both exercises:
+
+- **Hand:** moving video frames were visible, playback advanced, the app
+  remained responsive, and the run completed without an ANR — `PASS`.
+- **Leg:** moving video frames were visible, playback advanced, the app
+  remained responsive, and the run completed without an ANR — `PASS`.
+
+The incident classification is:
+
+```text
+ISSUE_RECOVERED_AFTER_REBOOT
+```
+
+The evidence associates the observed failure with an unhealthy Android
+media/audio runtime state that recovered after one controlled device reboot.
+It does not establish an Android playback-source defect, a specific internal
+media-service failure mechanism, a universal reboot remedy, or the behavior of
+future runtime incidents. This dated record is separate from the earlier V4H
+exercise-playback acceptance and does not rewrite that historical evidence.
+
 ## 4. External ownership boundaries
 
 | Boundary | Repository/runtime owner | Successor action |

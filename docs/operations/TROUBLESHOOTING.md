@@ -49,6 +49,72 @@ part of operator readiness. V4H did not observe an autonomous takeover during
 its bounded monitor; do not claim that `StandbyActivity` always automatically
 takes foreground.
 
+## Exercise video does not start / app ANRs
+
+Use this bounded path when an exercise action produces no moving video frame
+and the app becomes unresponsive or reports an ANR before media preparation.
+The 2026-09-30 incident showed this call path:
+
+```text
+VideoView.openVideo
+-> MediaPlayer.native_setup
+-> AudioSystem.get_audio_flinger
+```
+
+Treat the following rule as a hard diagnostic boundary:
+
+```text
+service registered != service responsive
+```
+
+1. Confirm the accepted installed package and version, and confirm that the
+   installed APK contains both expected exercise resources.
+2. Preserve the relevant ANR and focused logcat evidence before repeating the
+   action. Do not replace the installed APK during reproduction.
+3. Clear logcat immediately before one hand reproduction and again before one
+   leg reproduction when the operator can repeat the test safely.
+4. Check service registration with the exact authorized serial:
+
+   ```text
+   adb -s <SERIAL> shell service check media.audio_flinger
+   adb -s <SERIAL> shell service check media.player
+   adb -s <SERIAL> shell service check audio
+   ```
+
+5. Run each Binder-backed `dumpsys` through an approximately eight-second
+   host-side timeout. The raw commands to bound individually are:
+
+   ```text
+   adb -s <SERIAL> shell dumpsys media.audio_flinger
+   adb -s <SERIAL> shell dumpsys media.player
+   adb -s <SERIAL> shell dumpsys audio
+   ```
+
+6. If the services are registered but one or more bounded dumpsys calls do not
+   return, record the Android media/audio runtime as a separate failure
+   boundary before changing playback source code. A registered service is not
+   evidence that its Binder interface is healthy.
+
+Do not immediately reinstall the APK, run `pm clear`, modify `VideoView`, kill
+`mediaserver`, or restart arbitrary services as a workaround. Device reboot or
+other recovery action requires explicit authorization from the device
+operator. Keep the incident record separate from the earlier V4H playback
+acceptance.
+
+In the bounded 2026-09-30 incident, one explicitly authorized reboot restored
+responsiveness of all three service probes. Both hand and leg playback then
+showed moving frames, advanced, remained responsive, and completed without an
+ANR. The resulting classification was `ISSUE_RECOVERED_AFTER_REBOOT`; this is
+an incident record, not a claim that reboot is a universal remedy.
+
+Post-recovery acceptance requires all of the following:
+
+- the service-registration checks succeed and each bounded diagnostic probe
+  responds;
+- the hand exercise displays visibly moving frames and advances; and
+- the leg exercise displays visibly moving frames and advances, with the app
+  remaining responsive and no ANR during either run.
+
 ## Temi top controls do not respond
 
 V4D identified a Temi-owned `SYSTEM_ALERT_WINDOW` from
