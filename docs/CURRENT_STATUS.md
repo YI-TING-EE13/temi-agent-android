@@ -1,6 +1,6 @@
 # Current Status
 
-Status date: **2026-09-01**
+Status date: **2026-09-30**
 
 This document is the current-truth record for the accepted Android publication
 baseline. It separates current source facts from verified evidence,
@@ -26,7 +26,7 @@ The successor landing register is [HANDOVER_READINESS.md](./handover/HANDOVER_RE
 | Required `main` status context | `test-and-build` |
 | Historical physical Temi baseline before V4F | `1.0.4` / `versionCode 5` |
 | Current accepted physical Temi | `1.0.5` / `versionCode 6` |
-| Status date | `2026-08-31` |
+| Status date | `2026-09-30` |
 
 The previously accepted implementation/runtime evidence remains tied to
 `8c458888657efca5384c6d51e5ec57e8b385d987`. The V4E candidate starts from
@@ -119,6 +119,25 @@ playback implementation remain unchanged.
 At the V4E stage, this was source/build evidence only. V4F physically
 confirmed the safe placement of the exercise controls, and V4H later
 completed the physical hand and leg coordinate-tap playback acceptance.
+
+## 2026-09-30 exercise-media runtime incident
+
+The accepted `com.robotemi.agent` versionCode 6 / versionName 1.0.5
+installation later reproduced an exercise-media runtime failure: both videos
+showed no moving frame and the application became unresponsive before media
+preparation. The registered `media.audio_flinger`, `media.player`, and `audio`
+services did not respond to bounded Binder-backed `dumpsys` probes. This record
+is separate from the earlier V4H playback acceptance and does not replace its
+historical scope.
+
+One explicitly authorized Temi reboot restored service responsiveness without
+an APK reinstall, data clear, downgrade, source change, or media-resource
+change. The three post-reboot probes responded in approximately 135 ms, 123 ms,
+and 136 ms respectively. Hand and leg playback then showed moving frames,
+advanced, remained responsive, and completed without an ANR. The classification
+is `ISSUE_RECOVERED_AFTER_REBOOT`; the evidence associates the incident with an
+unhealthy Android media/audio runtime state and does not establish an Android
+playback-source defect or a specific internal media-service failure mechanism.
 
 ## Historical V4E verification record
 
