@@ -23,11 +23,31 @@ public final class CanonicalCommandRuntime {
 
     public interface Listener {
         void onTtsResolved(Resolution resolution);
+
+        default void onTtsStarted(SpeechPresentation speech) {}
     }
 
     /** Durable terminalization hook owned by the process runtime, not the Activity. */
     public interface Terminalizer {
         void persistAndPublish(Resolution resolution);
+    }
+
+    public static final class SpeechPresentation {
+        public final UUID requestId;
+        public final String eventId;
+        public final String text;
+        public final boolean continueListening;
+
+        public SpeechPresentation(
+                UUID requestId,
+                String eventId,
+                String text,
+                boolean continueListening) {
+            this.requestId = requestId;
+            this.eventId = eventId;
+            this.text = text;
+            this.continueListening = continueListening;
+        }
     }
 
     public static final class Resolution {
@@ -105,6 +125,8 @@ public final class CanonicalCommandRuntime {
     private Pending pending;
     private Resolution bufferedResolution;
     private Cancellable timeoutTask;
+    private SpeechPresentation presentation;
+    private SpeechPresentation bufferedPresentation;
 
     public CanonicalCommandRuntime(Scheduler scheduler) {
         this(scheduler, DEFAULT_TTS_TIMEOUT_MS, null);
@@ -125,18 +147,24 @@ public final class CanonicalCommandRuntime {
     }
 
     /** Attach or replace the UI observer without changing the pending operation. */
-    public void attachListener(Listener nextListener) {
-        Resolution replay = null;
-        Listener replayListener = null;
-        synchronized (this) {
-            listener = nextListener;
-            if (listener != null && bufferedResolution != null) {
-                replay = bufferedResolution;
-                bufferedResolution = null;
-                replayListener = listener;
-            }
+    public synchronized void attachListener(Listener nextListener) {
+        listener = nextListener;
+        if (listener == null) return;
+
+        SpeechPresentation replaySpeech = bufferedResolution != null
+                ? bufferedPresentation : presentation;
+
+        Resolution replay = bufferedResolution;
+        bufferedResolution = null;
+        bufferedPresentation = null;
+
+        if (replaySpeech != null) {
+            listener.onTtsStarted(replaySpeech);
         }
-        if (replay != null && replayListener != null) replayListener.onTtsResolved(replay);
+
+        if (replay != null) {
+            listener.onTtsResolved(replay);
+        }
     }
 
     /** Detaches only the observer; the process-owned operation remains pending. */
@@ -160,15 +188,54 @@ public final class CanonicalCommandRuntime {
             String actionId,
             String actionType,
             boolean terminalAction) {
+        return beginTtsWithPresentation(
+                requestId,
+                commandId,
+                eventId,
+                robotId,
+                actionId,
+                actionType,
+                terminalAction,
+                null);
+    }
+
+    public synchronized boolean beginTtsWithPresentation(
+            UUID requestId,
+            String commandId,
+            String eventId,
+            String robotId,
+            String actionId,
+            String actionType,
+            boolean terminalAction,
+            SpeechPresentation speech) {
+
         if (requestId == null || commandId == null || actionId == null) {
-            throw new IllegalArgumentException("invalid_canonical_tts_correlation");
+            throw new IllegalArgumentException(
+                    "invalid_canonical_tts_correlation");
         }
+
         synchronized (this) {
             if (pending != null) return false;
-            pending = new Pending(requestId, commandId, eventId, robotId,
-                    actionId, actionType, terminalAction);
+
+            pending = new Pending(
+                    requestId,
+                    commandId,
+                    eventId,
+                    robotId,
+                    actionId,
+                    actionType,
+                    terminalAction);
+
+            presentation = speech;
+
             timeoutTask = scheduler.schedule(
-                    () -> resolveTimeout(requestId), timeoutMs);
+                    () -> resolveTimeout(requestId),
+                    timeoutMs);
+
+            if (listener != null && speech != null) {
+                listener.onTtsStarted(speech);
+            }
+
             return true;
         }
     }
@@ -183,6 +250,7 @@ public final class CanonicalCommandRuntime {
     public synchronized void cancelTts(UUID requestId) {
         if (pending == null || !pending.requestId.equals(requestId)) return;
         pending = null;
+        presentation = null;
         if (timeoutTask != null) {
             timeoutTask.cancel();
             timeoutTask = null;
@@ -224,9 +292,12 @@ public final class CanonicalCommandRuntime {
                     completed.actionType,
                     completed.terminalAction);
             callback = listener;
+
             if (callback == null) {
                 bufferedResolution = resolution;
+                bufferedPresentation = presentation;
             }
+            presentation = null;
         }
         if (terminalizer != null) {
             try {

@@ -173,8 +173,59 @@ public class MainActivity extends AppCompatActivity
     private CareReportViewModel careReportViewModel;
 
     /** The service owns the TTS callback; this Activity only observes resolutions. */
+    private boolean activityStarted;
+    private String expectedReplyEventId;
+    private CanonicalCommandRuntime.SpeechPresentation serviceSpeech;
+
     private final MqttLifecycleService.CanonicalTtsListener canonicalTtsListener =
-            this::completeCanonicalTtsAction;
+            new MqttLifecycleService.CanonicalTtsListener() {
+                @Override
+                public void onCanonicalTtsStarted(
+                        CanonicalCommandRuntime.SpeechPresentation speech) {
+                    observeServiceSpeech(speech);
+                }
+
+                @Override
+                public void onCanonicalTtsResolved(
+                        CanonicalCommandRuntime.Resolution resolution) {
+                    completeCanonicalTtsAction(resolution);
+                }
+            };
+
+    private void observeServiceSpeech(
+            CanonicalCommandRuntime.SpeechPresentation speech) {
+
+        if (isFinishing()
+                || isDestroyed()
+                || activeCanonicalCommand != null
+                || !canonicalCommandQueue.isEmpty()) {
+            return;
+        }
+
+        AgentStateMachine.State state = stateMachine.getCurrentState();
+
+        boolean matchingReply = expectedReplyEventId != null
+                && expectedReplyEventId.equals(speech.eventId);
+
+        boolean samePlayback = serviceSpeech != null
+                && serviceSpeech.requestId.equals(speech.requestId);
+
+        if (!(samePlayback
+                || state == AgentStateMachine.State.IDLE
+                || (matchingReply
+                && (state == AgentStateMachine.State.WAITING
+                || state == AgentStateMachine.State.THINKING)))) {
+            return;
+        }
+
+        serviceSpeech = speech;
+
+        stateMachine.transitionTo(AgentStateMachine.State.EXECUTING);
+        showSubtitle(speech.text, speech.requestId);
+
+        Log.i(TAG, "SERVICE_REPLY_UI: EXECUTING; subtitle shown");
+    }
+
 
     private final SingleActiveMqttBroker.Listener mqttListener =
             new SingleActiveMqttBroker.Listener() {
@@ -219,7 +270,9 @@ public class MainActivity extends AppCompatActivity
             activeMqttBroker = localBinder.broker();
             mqttServiceBound = true;
             mqttListenerRegistration = localBinder.attachListener(mqttListener);
-            localBinder.attachCanonicalTtsListener(canonicalTtsListener);
+            if (activityStarted) {
+                localBinder.attachCanonicalTtsListener(canonicalTtsListener);
+            }
             if (mediaV11PlaybackBinding == null) {
                 mediaV11PlaybackBinding = createMediaV11PlaybackBinding();
             }
@@ -513,6 +566,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        activityStarted = true;
+        if (mqttServiceBinder != null) {
+            mqttServiceBinder.attachCanonicalTtsListener(canonicalTtsListener);
+        }
         if (residentIdentityViewModel != null) {
             ResidentIdentityUiState identity = residentIdentityViewModel.state();
             syncCareReportIdentity(identity);
@@ -546,6 +603,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onStop() {
+        activityStarted = false;
+        if (mqttServiceBinder != null) {
+            mqttServiceBinder.detachCanonicalTtsListener();
+        }
         super.onStop();
         hotwordEnabled = false;
         mainHandler.removeCallbacksAndMessages(null);
@@ -998,8 +1059,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onStateChanged(AgentStateMachine.State oldState, AgentStateMachine.State newState) {
+        if (stateMachine.getCurrentState() != newState) return;
         updateAgentState(newState.name());
         if (newState == AgentStateMachine.State.IDLE) {
+            expectedReplyEventId = null;
             startHotwordListening();
         } else {
             stopHotwordListening();
@@ -1018,6 +1081,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onInterrupt() {
         Log.w(TAG, "Executing Global Interrupt: Stopping all actions.");
+        serviceSpeech = null;
+        expectedReplyEventId = null;
         if (mediaPlaybackController != null && mediaPlaybackController.hasActivePlayback()) {
             mediaPlaybackController.localUserStop();
         } else {
@@ -1041,7 +1106,7 @@ public class MainActivity extends AppCompatActivity
             ttsRequest.getStatus() == TtsRequest.Status.ERROR) {
             hideSubtitleForRequest(ttsRequest);
 
-            if (activeCanonicalCommand != null) {
+            if (activeCanonicalCommand != null || serviceSpeech != null) {
                 Log.i(TAG, "Canonical TTS completion is owned by MqttLifecycleService");
                 return;
             }
@@ -1591,6 +1656,7 @@ public class MainActivity extends AppCompatActivity
             activeCanonicalCommand.continueListeningAfterCompletion |=
                     action.shouldContinueListening();
             activeCanonicalCommand.pendingSpeechAction = action;
+            activeCanonicalCommand.pendingSpeechRequestId = request.getId();
             if (mqttServiceBinder == null
                     || !mqttServiceBinder.beginCanonicalTts(
                             request.getId(),
@@ -1619,16 +1685,68 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void completeCanonicalTtsAction(CanonicalCommandRuntime.Resolution resolution) {
-        if (activeCanonicalCommand == null
-                || activeCanonicalCommand.pendingSpeechAction == null) {
-            Log.e(TAG, "Canonical TTS resolved without an active speech action");
+    private void completeCanonicalTtsAction(
+            CanonicalCommandRuntime.Resolution resolution) {
+        if (serviceSpeech != null
+                && serviceSpeech.requestId.equals(resolution.getRequestId())) {
+
+            CanonicalCommandRuntime.SpeechPresentation finished = serviceSpeech;
+            serviceSpeech = null;
+
+            if (finished.requestId.equals(activeSubtitleTtsId)) {
+                hideSubtitle();
+            }
+
+            if (stateMachine.getCurrentState()
+                    == AgentStateMachine.State.EXECUTING
+                    && activeCanonicalCommand == null
+                    && canonicalCommandQueue.isEmpty()) {
+
+                expectedReplyEventId = null;
+
+                if ("completed".equals(resolution.getStatus())
+                        && finished.continueListening) {
+
+                    stateMachine.transitionTo(
+                            AgentStateMachine.State.WAKEUP_TRIGGERED);
+                    stateMachine.transitionTo(
+                            AgentStateMachine.State.ASR_LISTENING);
+                    wakeupWithoutBuiltInResponse();
+
+                } else {
+                    stateMachine.transitionTo(AgentStateMachine.State.IDLE);
+                }
+
+                Log.i(TAG,
+                        "SERVICE_REPLY_UI: resolved=" + resolution.getStatus()
+                                + "; state=" + stateMachine.getCurrentState());
+            }
+
             return;
         }
+
+        if (activeCanonicalCommand == null
+                || activeCanonicalCommand.pendingSpeechAction == null) {
+            Log.i(TAG, "Ignoring TTS resolution not owned by this Activity");
+            return;
+        }
+
+        if (!resolution.getRequestId().equals(
+                activeCanonicalCommand.pendingSpeechRequestId)) {
+            Log.i(TAG, "Ignoring stale canonical TTS resolution");
+            return;
+        }
+
+        activeCanonicalCommand.pendingSpeechRequestId = null;
+
         CanonicalAction action = activeCanonicalCommand.pendingSpeechAction;
+
         activeCanonicalCommand.recordResult(createActionResult(
-                action.getActionId(), action.getType(),
-                resolution.getStatus(), resolution.getError()));
+                action.getActionId(),
+                action.getType(),
+                resolution.getStatus(),
+                resolution.getError()));
+
         activeCanonicalCommand.pendingSpeechAction = null;
         activeCanonicalCommand.nextActionIndex++;
         executeNextCanonicalAction();
@@ -1929,6 +2047,7 @@ public class MainActivity extends AppCompatActivity
         private int failedCount;
         private int cancelledCount;
         private CanonicalAction pendingSpeechAction;
+        private UUID pendingSpeechRequestId;
         private CanonicalAction pendingMediaAction;
         private String pendingMediaToken;
         private boolean continueListeningAfterCompletion;
@@ -2016,12 +2135,13 @@ public class MainActivity extends AppCompatActivity
             json.put("language", sttLanguage.name());
             json.put("timestamp_ms", asrCompleteTimeMs);
 
+            expectedReplyEventId = eventId;
+            stateMachine.transitionTo(AgentStateMachine.State.THINKING);
+
             if (activeMqttBroker.isConnected()) {
                 activeMqttBroker.publish(
                         MqttTopicSet.EVENT_ASR_LEGACY, json.toString(), null);
             }
-
-            stateMachine.transitionTo(AgentStateMachine.State.THINKING);
         } catch (JSONException e) {
             Log.e(TAG, "Failed to create ASR JSON", e);
             stateMachine.transitionTo(AgentStateMachine.State.IDLE);
