@@ -399,7 +399,11 @@ public final class MqttLifecycleService extends Service {
     }
 
     public interface CanonicalTtsListener {
-        void onCanonicalTtsResolved(CanonicalCommandRuntime.Resolution resolution);
+        default void onCanonicalTtsStarted(
+                CanonicalCommandRuntime.SpeechPresentation speech) {}
+
+        void onCanonicalTtsResolved(
+                CanonicalCommandRuntime.Resolution resolution);
     }
 
     @Nullable
@@ -435,15 +439,45 @@ public final class MqttLifecycleService extends Service {
         }
     }
 
-    private synchronized void attachCanonicalTtsListener(CanonicalTtsListener listener) {
+    private volatile long canonicalUiGeneration;
+    private synchronized void attachCanonicalTtsListener(
+            CanonicalTtsListener listener) {
+        final long generation = ++canonicalUiGeneration;
+
         if (canonicalCommandRuntime != null) {
             canonicalCommandRuntime.attachListener(
-                    listener == null ? null : listener::onCanonicalTtsResolved);
+                    listener == null
+                            ? null
+                            : new CanonicalCommandRuntime.Listener() {
+                        @Override
+                        public void onTtsStarted(
+                                CanonicalCommandRuntime.SpeechPresentation speech) {
+                            canonicalHandler.post(() -> {
+                                if (generation == canonicalUiGeneration) {
+                                    listener.onCanonicalTtsStarted(speech);
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onTtsResolved(
+                                CanonicalCommandRuntime.Resolution resolution) {
+                            canonicalHandler.post(() -> {
+                                if (generation == canonicalUiGeneration) {
+                                    listener.onCanonicalTtsResolved(resolution);
+                                }
+                            });
+                        }
+                    });
         }
     }
 
     private synchronized void detachCanonicalTtsListener() {
-        if (canonicalCommandRuntime != null) canonicalCommandRuntime.detachListener();
+        canonicalUiGeneration++;
+
+        if (canonicalCommandRuntime != null) {
+            canonicalCommandRuntime.detachListener();
+        }
     }
 
     private synchronized boolean beginCanonicalTts(
@@ -767,14 +801,19 @@ public final class MqttLifecycleService extends Service {
             throw new IllegalStateException("canonical_command_execution_transition_rejected");
         }
         UUID requestId = request.getId();
-        if (!canonicalCommandRuntime.beginTts(
+        if (!canonicalCommandRuntime.beginTtsWithPresentation(
                 requestId,
                 command.getCommandId(),
                 command.getEventId(),
                 command.getRobotId(),
                 action.getActionId(),
                 action.getType(),
-                true)) {
+                true,
+                new CanonicalCommandRuntime.SpeechPresentation(
+                        requestId,
+                        command.getEventId(),
+                        action.getText(),
+                        action.shouldContinueListening()))) {
             diagnostics.record(
                     "runtime", "command_request", command.getCommandId(),
                     command.getEventId(), action.getActionId(),
